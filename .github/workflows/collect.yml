@@ -6,14 +6,11 @@
 #   Variables (선택): WORKER_URL(기본 https://wow-forever.wowak.workers.dev), GUILD_SLUG(기본 같이와포하자), REGION(기본 kr)
 #
 # 수동 실행: Actions 탭 → collect → Run workflow (force=true 면 전원 재수집 + 특성 트리 재생성)
+# 예약 실행: wow-forever Worker의 Cron Trigger가 매시 58분에 workflow_dispatch로 호출 (worker/wrangler.toml)
+#   GitHub의 schedule 이벤트는 쓰지 않음 (넣으면 수집이 이중으로 실행됨)
 name: collect
 
 on:
-  schedule:
-    # 한국시간(KST) 매시 58분 실행
-    #   cron은 GitHub 규칙상 UTC로 해석되지만, "분"만 지정했으므로 KST(UTC+9, 정시 단위 차이)와 결과가 같음
-    #   → 18:58, 19:58 … (KST) 그대로 실행 · GitHub 예약 실행은 보장되지 않음(지연 5~15분·간헐적 누락 가능)
-    - cron: "58 * * * *"
   workflow_dispatch:
     inputs:
       force:
@@ -28,14 +25,13 @@ concurrency:
 
 permissions:
   contents: read
-  actions: write # 아래 keepalive (예약 실행 자동 비활성화 방지)
 
 jobs:
   collect:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      TZ: Asia/Seoul # 로그·요약·주간 keepalive 판단을 모두 한국시간 기준으로
+      TZ: Asia/Seoul # 로그·요약을 한국시간 기준으로
     steps:
       - uses: actions/checkout@v4
         with:
@@ -69,14 +65,3 @@ jobs:
             cat collect.log
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
-
-      # 공개 저장소의 예약 실행은 60일간 저장소 활동이 없으면 GitHub가 자동 비활성화함
-      # → 매주 월요일 12시대(KST) 회차에 이 워크플로를 다시 '활성화' 상태로 갱신 (커밋 없이 API만)
-      - name: keepalive (주 1회)
-        if: github.event_name == 'schedule' && github.event.schedule == '58 * * * *'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          if [ "$(date +%u%H)" = "112" ]; then # 월요일(1) 12시(KST)
-            gh api -X PUT "repos/${{ github.repository }}/actions/workflows/collect.yml/enable" && echo "keepalive ok"
-          fi

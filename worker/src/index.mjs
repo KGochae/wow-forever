@@ -4,10 +4,11 @@
 //   POST /forever/refresh?c={slug}  Update 버튼 — Blizzard 실시간 조회 → R2 갱신 → 새 캐릭터 JSON 반환
 //   GET  /mv/{env}/...              3D 모델 프록시 — R2(MODEL_CACHE) → 엣지 캐시 → zamimg (WEB_PROJECT와 같은 키 규칙)
 //   GET|PUT /forever/ingest/{key}   수집기 전용 (Authorization: Bearer INGEST_TOKEN) — R2 API 키 없이 Worker 바인딩으로 읽기·쓰기
+//   Cron Trigger (wrangler.toml)    GitHub Actions 수집 워크플로를 workflow_dispatch로 실행
 //
 // 바인딩: DATA(R2 wow-forever-data) · MODEL_CACHE(R2 wow-model-cache, 기존) · RATE(KV)
-// 시크릿: BLIZZARD_CLIENT_ID · BLIZZARD_CLIENT_SECRET · INGEST_TOKEN(수집기 업로드용)
-// 변수: REGION · ALLOWED_ORIGINS(쉼표 구분) · REFRESH_COOLDOWN_SEC · REFRESH_IP_PER_HOUR
+// 시크릿: BLIZZARD_CLIENT_ID · BLIZZARD_CLIENT_SECRET · INGEST_TOKEN(수집기 업로드용) · GH_DISPATCH_TOKEN(저장소 Actions 쓰기 전용)
+// 변수: REGION · ALLOWED_ORIGINS(쉼표 구분) · REFRESH_COOLDOWN_SEC · REFRESH_IP_PER_HOUR · GH_REPO · GH_WORKFLOW · GH_REF
 import { createBnet, NS } from "../../collector/lib/bnet.mjs";
 import { buildCharacter, equippedItemIds, fetchCharacterRaw, indexEntry } from "../../collector/lib/transform.mjs";
 
@@ -170,7 +171,29 @@ async function handleModel(request, env, ctx, path, h) {
   return res;
 }
 
+// ── 4. 예약 수집 실행 ──
+async function triggerCollect(env) {
+  if (!env.GH_DISPATCH_TOKEN) throw new Error("GH_DISPATCH_TOKEN 시크릿이 없습니다");
+  const res = await fetch(`https://api.github.com/repos/${env.GH_REPO}/actions/workflows/${env.GH_WORKFLOW}/dispatches`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.GH_DISPATCH_TOKEN}`,
+      Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+      "User-Agent": "wow-forever-worker",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ ref: env.GH_REF }),
+  });
+  // 실패를 던져야 Cloudflare Cron 이벤트 기록에 실패로 남음
+  if (!res.ok) throw new Error(`수집 실행 요청 실패: ${res.status} ${(await res.text()).slice(0, 200)}`);
+}
+
 export default {
+  async scheduled(_event, env) {
+    await triggerCollect(env);
+  },
+
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const h = cors(request, env);

@@ -405,11 +405,13 @@ WEB_PROJECT 방식: `generateModels(aspect, '#model_3d', {race, gender, customiz
 - `.gitignore`: `/worker/.dev.vars`, `/worker/.wrangler/` / 예시: `.env.example`
 
 ## 22. GitHub Actions 매시간 수집 (`.github/workflows/collect.yml`) — 파일만, 미적용
-- 실행: 매시 17분(`17 * * * *`, 정각 혼잡 회피·실제 5~15분 지연 가능) + 수동 실행(Run workflow, `force` 옵션)
+- 실행: Worker Cron Trigger(`58 * * * *`, `worker/wrangler.toml`)가 `workflow_dispatch` 호출 + 수동 실행(Run workflow, `force` 옵션)
+  - 변경 이유 (2026-11-08): GitHub `schedule` 이벤트가 설정 정상인데도 예약 시각 3회 모두 실행 기록 0건 → 외부 트리거로 전환, `schedule`·keepalive 제거
+  - Worker 시크릿 `GH_DISPATCH_TOKEN`: `KGochae/wow-forever` 저장소 Actions 쓰기 전용 fine-grained PAT. 만료되면 수집이 멈추므로 갱신 필요
+  - 실패 확인: Cloudflare 대시보드 → Workers → wow-forever → Cron 이벤트
 - 수집기만 체크아웃(sparse) → `npm ci --prefix collector` (전용 `collector/package.json`, 의존성 aws4fetch 1개) → `STORAGE=r2 node collect.mjs`
 - 실행 로그를 Actions 요약(Step Summary)에 표시, 동시 실행 방지(`concurrency: collect`), 제한시간 15분
 - Secrets: `BLIZZARD_CLIENT_ID`, `BLIZZARD_CLIENT_SECRET`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` / Variables(선택): `GUILD_SLUG`, `REGION`, `R2_BUCKET`
-- 공개 저장소 예약 실행 60일 무활동 자동 비활성화 대비: 매주 월 03시(UTC) 회차에 워크플로 enable API 호출(커밋 없음)
 - 공개 저장소 주의: Actions 로그는 공개 → 수집기는 키·토큰을 출력하지 않음 (Secrets는 GitHub가 로그에서 자동 마스킹)
 - 알려진 경합: 수집(약 20초) 중 Update 버튼이 같은 캐릭터를 갱신하면 index 항목이 수집 결과로 덮일 수 있음 → 데이터 차이는 거의 없고 다음 회차에 정정
 
@@ -438,7 +440,7 @@ WEB_PROJECT 방식: `generateModels(aspect, '#model_3d', {race, gender, customiz
 | 수집기 | `collector/` — 증분 수집(바뀐 사람만), 공식 API 우선·Wowhead는 신규 displayId만, static 버전 바뀔 때만 특성 트리, local/worker/r2 저장 | 20장 |
 | Worker | `worker/` → **https://wow-forever.wowak.workers.dev** 배포 완료 (데이터 제공 · Update(refresh) · 3D 프록시 · 수집기 업로드 ingest) | 21·23장 |
 | Cloudflare | R2 `wow-forever-data`, KV `RATE`, 시크릿 3개 / 첫 전체 수집 업로드 완료(232명) | 23장 |
-| GitHub Actions | `.github/workflows/collect.yml` 작성 완료 (매시 17분, STORAGE=worker) — **아직 저장소 없음 → 미동작** | 22·23장 |
+| GitHub Actions | `.github/workflows/collect.yml` (STORAGE=worker) — Worker Cron Trigger가 매시 58분 호출 | 22·23장 |
 
 ### 지금 운영 데이터 상태
 - R2에 최신 데이터 있음 (마지막 수집: 로컬에서 수동 실행) → **GitHub Actions 연결 전까지 자동 갱신 안 됨**
@@ -447,7 +449,7 @@ WEB_PROJECT 방식: `generateModels(aspect, '#model_3d', {race, gender, customiz
 ### 비밀값 위치 (모두 git 제외)
 - `.env.local` : BLIZZARD_CLIENT_ID/SECRET, WORKER_URL, INGEST_TOKEN, NEXT_PUBLIC_API_BASE(로컬 8787)
 - `worker/.dev.vars` : 로컬 Worker용 같은 값
-- Cloudflare Worker 시크릿: BLIZZARD_CLIENT_ID/SECRET, INGEST_TOKEN (등록 완료)
+- Cloudflare Worker 시크릿: BLIZZARD_CLIENT_ID/SECRET, INGEST_TOKEN (등록 완료), GH_DISPATCH_TOKEN (예약 수집용)
 
 ### 로컬 실행 방법
 - 사이트: `npm run dev` → http://localhost:3000
@@ -470,7 +472,7 @@ WEB_PROJECT 방식: `generateModels(aspect, '#model_3d', {race, gender, customiz
 - [x] 방법 ①: GitHub CLI 2.103.3 설치(`C:\Program Files\GitHub CLI\gh.exe`, 계정 KGochae, scope repo·workflow)
   - 커밋 작성자(이 저장소만): `KGochae <86241587+KGochae@users.noreply.github.com>` — 실제 이메일 비공개
 - [x] Secrets 등록: `BLIZZARD_CLIENT_ID`, `BLIZZARD_CLIENT_SECRET`, `INGEST_TOKEN`
-- [x] `collect` 수동 실행 1회 성공 (run 42454899820): 길드원 266명 · 변경 190명 · Blizzard 1,801요청 · 313초 → 운영 index.json `collectedAt` 갱신 확인. 이후 매시 17분 자동
+- [x] `collect` 수동 실행 1회 성공 (run 42454899820): 길드원 266명 · 변경 190명 · Blizzard 1,801요청 · 313초 → 운영 index.json `collectedAt` 갱신 확인. 이후 Worker Cron으로 매시 58분 자동
 
 ### C. Vercel 배포 (사용자 계정 필요)
 - [x] Vercel CLI 65.12.1로 배포 (계정 `male960203-1260`, 팀 `chaechae`, 프로젝트 `wow-forever`) — 2026-11-08
@@ -488,7 +490,7 @@ WEB_PROJECT 방식: `generateModels(aspect, '#model_3d', {race, gender, customiz
 - [x] Worker `ALLOWED_ORIGINS` = `wafo-haja` · `wow-forever-bay` · `wow-forever-chaechae` (.vercel.app) + `http://localhost:3000` → `wrangler deploy` (사용자 실행, Version 5d1d4871) — 백업 `backup/wrangler.before-vercel.toml`
 - [x] `next.config.ts`의 `/mv` rewrite는 로컬 전용으로 유지 (운영은 MODEL_BASE로 Worker 직접)
 - [~] 실서버 점검 (curl): `/`·`/viewer` 200, 번들에 Worker 주소 포함, index/chars/talents 200 + CORS 허용(wafo-haja), state 404, refresh 프리플라이트 204, 3D meta 200(X-Source r2)
-  - 남은 것: 브라우저에서 직접 검색 → 뷰어 → 3D → Update 클릭 확인, 매시 17분 자동 수집 반영 확인
+  - 남은 것: 브라우저에서 직접 검색 → 뷰어 → 3D → Update 클릭 확인, 매시 58분 자동 수집 반영 확인
 - [ ] 3D 1회 렌더 요청 수 실측 → Workers 무료 한도(10만/일, WEB_PROJECT와 계정 공유) 여유 확인
   - 미측정: 브라우저 없이 3D 1회 요청 수를 셀 수 없음 → Cloudflare 대시보드(Workers → wow-forever → Metrics)에서 하루치 요청 수 확인 예정
 - [x] 푸터·파비콘·공유 미리보기·404 (2026-11-08, 운영 배포 완료) — 백업 `backup/layout.before-meta.tsx`, `landing.before-footer.tsx`, `guild-viewer.before-footer.tsx`

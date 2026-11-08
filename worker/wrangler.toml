@@ -24,5 +24,13 @@ REGION = "kr"
 ALLOWED_ORIGINS = "https://wafo-haja.vercel.app,https://wow-forever-bay.vercel.app,https://wow-forever-chaechae.vercel.app,http://localhost:3000"
 REFRESH_COOLDOWN_SEC = "600"
 REFRESH_IP_PER_HOUR = "20"
+# 예약 수집: Cron Trigger가 이 워크플로를 workflow_dispatch로 실행
+GH_REPO = "KGochae/wow-forever"
+GH_WORKFLOW = "collect.yml"
+GH_REF = "main"
 
-# 시크릿 (wrangler secret put): BLIZZARD_CLIENT_ID, BLIZZARD_CLIENT_SECRET
+# 매시 58분 (Cloudflare cron은 UTC 기준이지만 분만 지정하므로 KST에서도 매시 58분)
+[triggers]
+crons = ["58 * * * *"]
+
+# 시크릿 (wrangler secret put): BLIZZARD_CLIENT_ID, BLIZZARD_CLIENT_SECRET, INGEST_TOKEN, GH_DISPATCH_TOKEN
