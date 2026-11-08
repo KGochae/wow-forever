@@ -13,6 +13,7 @@ interface Props {
   classes: { id: number; name: string; color: string }[];
   rankLabel: (r: number) => string;
   specs: string[]; // 선택한 클래스의 특성 목록 (클래스 전체면 [])
+  hasUnknown?: boolean; // 선택한 클래스에 특성 정보 없는 길드원이 있을 때만 "알 수 없음" 표시
   value: Filters;
   onChange: (f: Filters) => void;
 }
@@ -48,7 +49,7 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
   );
 }
 
-export function FilterRail({ ranks, classes, rankLabel, specs, value, onChange }: Props) {
+export function FilterRail({ ranks, classes, rankLabel, specs, hasUnknown, value, onChange }: Props) {
   return (
     <div className="no-scrollbar flex w-[88px] shrink-0 flex-col gap-1.5 overflow-y-auto border-r border-line px-1.5 py-2">
       <Group title="길드">
@@ -77,7 +78,7 @@ export function FilterRail({ ranks, classes, rankLabel, specs, value, onChange }
             {specs.map((sp) => (
               <Cat key={sp} active={value.spec === sp} onClick={() => onChange({ ...value, spec: sp })}>{sp}</Cat>
             ))}
-            <Cat active={value.spec === "none"} onClick={() => onChange({ ...value, spec: "none" })}>알 수 없음</Cat>
+            {hasUnknown && <Cat active={value.spec === "none"} onClick={() => onChange({ ...value, spec: "none" })}>알 수 없음</Cat>}
           </Group>
         </div>
       )}

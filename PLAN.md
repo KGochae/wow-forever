@@ -514,3 +514,13 @@ WEB_PROJECT 방식: `generateModels(aspect, '#model_3d', {race, gender, customiz
 - 클래스 필터 버튼: 선택 시에만 직업 색(글자·테두리·배경) — 백업 `backup/filter-rail.before-classcolor.tsx`
 - 사이드바 레벨 글자 흰색 — 백업 `backup/member-list.before-lvwhite.tsx`
 - 랜딩 안내 팝업 `src/components/landing/notice-popup.tsx` (로그아웃 후 반영·1시간 주기·프로필 공개 설정 안내, 7일간 보지 않기 = localStorage `wf_notice_hide_until`) — 문구는 사용자 직접 수정, 백업 `backup/landing.before-notice.tsx`
+
+### (추가, 2026-11-08) — 길드 통계(/stats): 스탯 리더보드 + 대시보드
+- **데이터 최적화**: 수집기 7.5단계에서 `rank.json` 생성 (전원 최종수치 22종, 압축 배열 `{collectedAt, keys, rows:[[id,...]]}` · 250명 22KB / gzip ~9KB)
+  - 바뀐 캐릭터만 새 값, 나머지는 이전 행 유지 (첫 실행만 chars/ 읽어 채움) · `collector/build-rank.mjs` = Blizzard 요청 없이 rank.json만 재생성
+  - 브라우저 localStorage 캐시(`wf_rank_v1`): 수집시각+65분 전이면 요청 0회, 수집 지연 시 10분 재시도 간격 → 1인 시간당 최대 1회
+  - Worker ingest 허용 키에 `rank.json` 추가 (배포 773813a6) · 운영 R2 시드 완료
+- **리더보드**: 왼쪽 필터(클래스/특성, 알 수 없음은 존재할 때만) · 직업별 스탯 컬럼(`CLASS_COLS`) · 기본 정렬 Lv · 헤더 클릭 정렬 · 공동 순위 · 1~3위 금은동 그라데이션 배지 · 30명/페이지 · 행 클릭 → 뷰어
+- **대시보드**: WEB_PROJECT 구성 — 직업 비율 treemap(클릭 시 분포도에 해당 직업 겹침) + 레벨 분포도 + 특성 칩 (index.json만 사용, 추가 요청 0)
+- 기타: 뷰어 기본 캐릭터 제거 · 아이템 검색 탭 삭제 · 뷰어 외 탭에서 사이드바 숨김 · 사이드바 특성 필터 "알 수 없음"도 존재할 때만
+- 남은 일: index.json에도 같은 시간 캐시 적용 검토

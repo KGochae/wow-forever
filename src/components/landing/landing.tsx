@@ -9,8 +9,7 @@ import { NoticePopup } from "@/components/landing/notice-popup";
 
 const NAV = [
   { label: "캐릭터 뷰어", href: "/viewer" },
-  { label: "아이템 검색", disabled: true },
-  { label: "길드 통계", disabled: true },
+  { label: "길드 통계", href: "/stats" },
   { label: "⚔ 레이드 구성", disabled: true },
 ];
 

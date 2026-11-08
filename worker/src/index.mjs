@@ -1,6 +1,6 @@
 // wow-forever Worker — WEB_PROJECT(wow-proxy)와 분리된 WOW_FOREVER 전용
 //
-//   GET  /forever/data/{key}        R2(DATA) 데이터 제공 — index.json · chars/{id}.json · talents/{cls}.json (state/ 차단)
+//   GET  /forever/data/{key}        R2(DATA) 데이터 제공 — index.json · rank.json · chars/{id}.json · talents/{cls}.json (state/ 차단)
 //   POST /forever/refresh?c={slug}  Update 버튼 — Blizzard 실시간 조회 → R2 갱신 → 새 캐릭터 JSON 반환
 //   GET  /mv/{env}/...              3D 모델 프록시 — R2(MODEL_CACHE) → 엣지 캐시 → zamimg (WEB_PROJECT와 같은 키 규칙)
 //   GET|PUT /forever/ingest/{key}   수집기 전용 (Authorization: Bearer INGEST_TOKEN) — R2 API 키 없이 Worker 바인딩으로 읽기·쓰기
@@ -130,7 +130,7 @@ function safeEqual(a, b) {
 async function handleIngest(request, env, key) {
   const auth = request.headers.get("Authorization") ?? "";
   if (!env.INGEST_TOKEN || !safeEqual(auth, `Bearer ${env.INGEST_TOKEN}`)) return json({ error: "unauthorized" }, 401, {});
-  if (!key || key.includes("..") || !/^(index\.json|chars\/\d+\.json|talents\/\d+\.json|state\/[a-z]+\.json)$/.test(key)) return json({ error: "bad key" }, 400, {});
+  if (!key || key.includes("..") || !/^(index\.json|rank\.json|chars\/\d+\.json|talents\/\d+\.json|state\/[a-z]+\.json)$/.test(key)) return json({ error: "bad key" }, 400, {});
   if (request.method === "GET") {
     const o = await env.DATA.get(key);
     return o ? new Response(o.body, { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } }) : json({ error: "not found" }, 404, {});

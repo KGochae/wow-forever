@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 
 const TABS = [
   { key: "viewer", label: "캐릭터 뷰어" },
-  { key: "items", label: "아이템 검색" },
   { key: "stats", label: "길드 통계" },
   { key: "raid", label: "레이드 구성", icon: Swords },
 ];

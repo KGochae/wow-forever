@@ -5,6 +5,7 @@
 //
 // 저장 구조 (storage 루트 기준)
 //   index.json            사이드바·검색 (길드원 전체, 경량)
+//   rank.json             리더보드 (전원 최종수치 22종, 압축 배열)
 //   chars/{id}.json       캐릭터 상세
 //   talents/{classId}.json 특성 트리 (static 버전 바뀔 때만)
 //   state/meta.json       { staticVersion, lastRun, chars: { [id]: lastLogin } }
@@ -19,6 +20,7 @@ import { buildCharacter, equippedItemIds, indexEntry, staticVersion, SUB_ENDPOIN
 import { resolveItems } from "./lib/items.mjs";
 import { buildAllTalents } from "./lib/talents.mjs";
 import { CACHE, createStorage } from "./lib/storage.mjs";
+import { buildRank } from "./lib/rank.mjs";
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
 const env = process.env;
@@ -113,6 +115,11 @@ const index = {
   }),
 };
 await store.putJSON("index.json", index, { cacheControl: CACHE.data });
+
+// ── 7.5 rank.json (리더보드 — 바뀐 캐릭터만 새 값, 나머지는 이전 행 유지) ──
+const rank = await buildRank(store, index.members.filter((m) => m.has).map((m) => m.id), built, collectedAt, { log });
+await store.putJSON("rank.json", rank, { cacheControl: CACHE.data });
+log(`7. index.json · rank.json(${rank.rows.length}명) 저장`);
 
 // ── 8. 상태 저장 ──
 meta.lastRun = collectedAt;

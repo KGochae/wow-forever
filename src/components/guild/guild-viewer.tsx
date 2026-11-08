@@ -16,8 +16,6 @@ import { GearColumn } from "@/components/character/gear-column";
 import { TalentColumn } from "@/components/character/talent-column";
 import { ItemTooltipProvider } from "@/components/common/item-tooltip";
 
-const DEFAULT_SLUG = "우왁굳-파워도적";
-
 /**
  * 뷰어 (/viewer?c={slug})
  * - 사이드바: index.json (길드원 전체, 경량)
@@ -37,9 +35,9 @@ export function GuildViewer() {
     [index]
   );
 
-  // 선택 = URL ?c=slug (없으면 기본 캐릭터)
-  const slug = params.get("c") ?? DEFAULT_SLUG;
-  const member = members.find((m) => m.slug === slug) ?? (members.length && !params.get("c") ? members[0] : undefined);
+  // 선택 = URL ?c=slug (없으면 선택 안 함 — 기본 캐릭터 없음)
+  const slug = params.get("c");
+  const member = slug ? members.find((m) => m.slug === slug) : undefined;
   const select = (m: Member) => router.replace(`/viewer?c=${encodeURIComponent(m.slug)}`, { scroll: false });
   const { data: detail, loading: charLoading } = useCharacter(member?.id, member?.has ?? false);
 
@@ -61,6 +59,7 @@ export function GuildViewer() {
   const avatars = useMemo(() => Object.fromEntries(members.filter((m) => m.avatar).map((m) => [m.id, m.avatar!])), [members]);
   const missing = useMemo(() => new Set(members.filter((m) => !m.has).map((m) => m.id)), [members]);
   const specChips = filters.classId === "all" ? [] : specsOf(filters.classId);
+  const hasUnknown = filters.classId !== "all" && members.some((m) => m.classId === filters.classId && (!m.spec || !specChips.includes(m.spec)));
 
   const filtered = members.filter((m) =>
     (filters.rank === "all" || m.rank === filters.rank) &&
@@ -72,7 +71,7 @@ export function GuildViewer() {
   return (
     <ItemTooltipProvider>
       <div className="flex h-screen flex-col overflow-hidden">
-        <TopNav active={tab} onTab={setTab} members={index?.members ?? null} onPick={select} />
+        <TopNav active={tab} onTab={(k) => (k === "stats" ? router.push("/stats") : setTab(k))} members={index?.members ?? null} onPick={select} />
 
         <div className="flex min-h-0 flex-1">
           {/*
@@ -81,9 +80,11 @@ export function GuildViewer() {
             ③ width 애니메이션 제거(메인 영역 매 프레임 재배치 방지) → 폭은 한 번에 전환, 보이는 효과는 transform/opacity(GPU)로만
             내부는 고정 330px 폭이라 접힘/펼침 중에도 목록 레이아웃 재계산 없음
           */}
+          {/* 사이드바는 캐릭터 뷰어 탭에서만 (레이드 구성 등 다른 탭은 숨김) */}
           <aside
             className={cn(
               "relative shrink-0 overflow-hidden border-r border-line bg-white/[.025]",
+              tab !== "viewer" && "hidden",
               collapsed ? "w-8" : "w-[330px]"
             )}
           >
@@ -96,7 +97,7 @@ export function GuildViewer() {
             >
               <MemberListHeader onCollapse={() => setCollapsed(true)} />
               <div className="flex min-h-0 flex-1">
-                <FilterRail ranks={ranks} classes={classes} rankLabel={RANK_LABEL} specs={specChips} value={filters} onChange={setFilters} />
+                <FilterRail ranks={ranks} classes={classes} rankLabel={RANK_LABEL} specs={specChips} hasUnknown={hasUnknown} value={filters} onChange={setFilters} />
                 <MemberList members={filtered} selectedId={selectedId ?? undefined} avatars={avatars} missing={missing} specs={specMap} onSelect={select} />
               </div>
             </div>
@@ -154,7 +155,7 @@ export function GuildViewer() {
                 )}
               </div>
             ) : (
-              <Center>{params.get("c") ? "해당 길드원을 찾을 수 없습니다" : "길드원을 선택하세요"}</Center>
+              <Center>{slug ? "해당 길드원을 찾을 수 없습니다" : "왼쪽 목록이나 상단 검색에서 길드원을 선택하세요"}</Center>
             )}
           </main>
         </div>
