@@ -466,10 +466,11 @@ WEB_PROJECT 방식: `generateModels(aspect, '#model_3d', {race, gender, customiz
 - [x] `next build` 성공 (Next 16.2.9, `/`·`/viewer` 정적 생성)
 
 ### B. GitHub 공개 저장소 (사용자 결정 필요)
-- [ ] 저장소 이름 결정 (예: `wow-forever`)
-- [ ] 방법 선택: ① GitHub CLI 설치·로그인(`winget install GitHub.cli` → `gh auth login`) 후 Claude가 생성·푸시·Secrets 등록 / ② github.com에서 빈 저장소 직접 생성 → Claude는 푸시만
-- [ ] Secrets 등록: `BLIZZARD_CLIENT_ID`, `BLIZZARD_CLIENT_SECRET`, `INGEST_TOKEN` (값은 `.env.local`)
-- [ ] Actions 탭에서 `collect` 수동 실행 1회 → 성공 확인 (이후 매시 17분 자동)
+- [x] 저장소: **https://github.com/KGochae/wow-forever** (공개, 브랜치 `main`) — 2026-11-08
+- [x] 방법 ①: GitHub CLI 2.103.3 설치(`C:\Program Files\GitHub CLI\gh.exe`, 계정 KGochae, scope repo·workflow)
+  - 커밋 작성자(이 저장소만): `KGochae <86241587+KGochae@users.noreply.github.com>` — 실제 이메일 비공개
+- [x] Secrets 등록: `BLIZZARD_CLIENT_ID`, `BLIZZARD_CLIENT_SECRET`, `INGEST_TOKEN`
+- [x] `collect` 수동 실행 1회 성공 (run 42454899820): 길드원 266명 · 변경 190명 · Blizzard 1,801요청 · 313초 → 운영 index.json `collectedAt` 갱신 확인. 이후 매시 17분 자동
 
 ### C. Vercel 배포 (사용자 계정 필요)
 - [ ] Vercel에서 GitHub 저장소 Import (Framework: Next.js)
