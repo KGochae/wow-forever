@@ -18,15 +18,20 @@ interface Props {
 }
 
 /** WEB_PROJECT .sidebar-filter-col / .sidebar-cat */
-function Cat({ active, children, onClick }: { active: boolean; children: React.ReactNode; onClick: () => void }) {
+function Cat({ active, children, onClick, color }: { active: boolean; children: React.ReactNode; onClick: () => void; color?: string }) {
+  // color: 직업 색 — 선택(클릭)했을 때만 글자·테두리·배경에 직업 색 적용
+  const tint = active && color;
   return (
     <button
       onClick={onClick}
+      style={tint ? { color, borderColor: color, backgroundColor: `${color}24` } : undefined}
       className={cn(
         "w-full break-keep rounded border px-1.5 py-[5px] text-center text-[11px] font-bold tracking-[.3px] transition-colors duration-100",
-        active
-          ? "border-tx1 bg-[rgba(130,130,130,.14)] text-tx1"
-          : "border-line2 bg-transparent text-tx2 hover:bg-[rgba(130,130,130,.08)] hover:text-tx"
+        tint
+          ? ""
+          : active
+            ? "border-tx1 bg-[rgba(130,130,130,.14)] text-tx1"
+            : "border-line2 bg-transparent text-tx2 hover:bg-[rgba(130,130,130,.08)] hover:text-tx"
       )}
     >
       {children}
@@ -58,7 +63,7 @@ export function FilterRail({ ranks, classes, rankLabel, specs, value, onChange }
       <Group title="클래스">
         <Cat active={value.classId === "all"} onClick={() => onChange({ ...value, classId: "all", spec: "all" })}>전체</Cat>
         {classes.map((c) => (
-          <Cat key={c.id} active={value.classId === c.id} onClick={() => onChange({ ...value, classId: c.id, spec: "all" })}>
+          <Cat key={c.id} color={c.color} active={value.classId === c.id} onClick={() => onChange({ ...value, classId: c.id, spec: "all" })}>
             {c.name}
           </Cat>
         ))}
@@ -72,7 +77,7 @@ export function FilterRail({ ranks, classes, rankLabel, specs, value, onChange }
             {specs.map((sp) => (
               <Cat key={sp} active={value.spec === sp} onClick={() => onChange({ ...value, spec: sp })}>{sp}</Cat>
             ))}
-            <Cat active={value.spec === "none"} onClick={() => onChange({ ...value, spec: "none" })}>없음</Cat>
+            <Cat active={value.spec === "none"} onClick={() => onChange({ ...value, spec: "none" })}>알 수 없음</Cat>
           </Group>
         </div>
       )}

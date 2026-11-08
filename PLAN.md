@@ -506,3 +506,11 @@ WEB_PROJECT 방식: `generateModels(aspect, '#model_3d', {race, gender, customiz
 ### (추가 수정, 2026-11-07)
 - 랜딩 "길드원 전체 보기" 버튼 삭제 — 백업 `backup/landing.before-noall.tsx`
 - 검색 자동완성이 사라지던 문제: 입력이 길드원 이름과 **정확히 일치하면 목록을 숨기던 조건** 때문 (한글 이름 대부분 3글자 → "세 글자마다 사라짐") → 일치해도 목록 유지, 정확 일치 항목을 맨 위에 표시 (`searchMembers`, `character-search.tsx`) — 백업 `backup/character-search.before-ac.tsx`, `backup/use-guild-data.before-ac.ts`
+
+### (추가 수정, 2026-11-08) — 운영 배포 완료
+- 특성 빈 캐릭터 조사: 19명(전부 10~19레벨)은 블리자드 specializations 응답 자체가 `{"is_active":true}`만 있음 → 수집 문제 아님(미투자 또는 로그아웃 전 미반영)
+- 사이드바 "특성 없음" → "알 수 없음", 특성 필터 "없음" → "알 수 없음" — 백업 `backup/member-list.before-unknown.tsx`
+- 능력치 제목 옆 "?" 아이콘 삭제 — 백업 `backup/stat-column.before-nohelp.tsx`
+- 클래스 필터 버튼: 선택 시에만 직업 색(글자·테두리·배경) — 백업 `backup/filter-rail.before-classcolor.tsx`
+- 사이드바 레벨 글자 흰색 — 백업 `backup/member-list.before-lvwhite.tsx`
+- 랜딩 안내 팝업 `src/components/landing/notice-popup.tsx` (로그아웃 후 반영·1시간 주기·프로필 공개 설정 안내, 7일간 보지 않기 = localStorage `wf_notice_hide_until`) — 문구는 사용자 직접 수정, 백업 `backup/landing.before-notice.tsx`

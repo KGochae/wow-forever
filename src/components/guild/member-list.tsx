@@ -53,13 +53,13 @@ export function MemberList({ members, selectedId, avatars, missing, specs, onSel
                   <span className="text-tx3">데이터 없음</span>
                 ) : (
                   <>
-                    <span className={specs?.get(m.id) ? "font-semibold text-tx2" : "text-tx3"}>{specs?.get(m.id) ?? "특성 없음"}</span>
+                    <span className={specs?.get(m.id) ? "font-semibold text-tx2" : "text-tx3"}>{specs?.get(m.id) ?? "알 수 없음"}</span>
                   </>
                 )}
               </span>
             </div>
             <div className="flex shrink-0 flex-col items-end gap-px">
-              <span className="text-[10px] text-tx2">Lv {m.level}</span>
+              <span className="text-[10px] text-white">Lv {m.level}</span>
               <span className="text-[11px] font-bold" style={{ color: cls?.color }}>{cls?.name}</span>
             </div>
           </button>

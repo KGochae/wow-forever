@@ -5,6 +5,7 @@ import { CharacterSearch } from "@/components/common/character-search";
 import { useGuildIndex } from "@/lib/use-guild-data";
 import type { Member } from "@/lib/wow";
 import { FAN_NOTICE } from "@/lib/config";
+import { NoticePopup } from "@/components/landing/notice-popup";
 
 const NAV = [
   { label: "캐릭터 뷰어", href: "/viewer" },
@@ -71,6 +72,8 @@ export function Landing() {
           )}
         </div>
       </div>
+
+      <NoticePopup />
 
       {/* 하단 고지 */}
       <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] px-6 pb-4 text-center text-[10.5px] leading-relaxed text-white/40 [text-shadow:0_1px_6px_rgba(0,0,0,.9)]">

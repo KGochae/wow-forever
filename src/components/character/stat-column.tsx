@@ -1,7 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useRef, useState } from "react";
-import { ChevronRight, HelpCircle } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMounted } from "@/components/common/use-mounted";
 import { classColor, num, type CharacterDetail } from "@/lib/wow";
@@ -244,7 +244,7 @@ export function StatColumn({ c }: { c?: CharacterDetail }) {
 function PanelHd() {
   return (
     <div className="flex h-10 items-center gap-1 border-b border-line px-4 text-[13px] font-extrabold text-tx1">
-      능력치 <HelpCircle className="h-3 w-3 text-tx3" />
+      능력치
     </div>
   );
 }
