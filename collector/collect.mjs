@@ -16,7 +16,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createBnet, NS } from "./lib/bnet.mjs";
-import { buildCharacter, equippedItemIds, indexEntry, staticVersion, SUB_ENDPOINTS } from "./lib/transform.mjs";
+import { buildCharacter, equippedItemIds, indexEntry, staticVersion, SUB_ENDPOINTS, withStreamer } from "./lib/transform.mjs";
 import { resolveItems } from "./lib/items.mjs";
 import { buildAllTalents } from "./lib/talents.mjs";
 import { CACHE, createStorage } from "./lib/storage.mjs";
@@ -110,7 +110,7 @@ const index = {
     if (c) return indexEntry(m, c);
     const prev = prevById.get(m.id);
     const p = profiles.get(m.id);
-    if (prev?.has) return { ...prev, level: p?.level ?? prev.level, rank: m.rank, name: m.name, surname: m.surname, slug: m.slug };
+    if (prev?.has) return withStreamer({ ...prev, level: p?.level ?? prev.level, rank: m.rank, name: m.name, surname: m.surname, slug: m.slug });
     return indexEntry(m, null);
   }),
 };

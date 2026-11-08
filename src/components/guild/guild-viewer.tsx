@@ -132,7 +132,7 @@ export function GuildViewer() {
                     level={detail?.level ?? member.level}
                     classId={member.classId}
                     specName={specMap.get(member.id) ?? undefined}
-                    avatar={detail?.avatar ?? member.avatar ?? undefined}
+                    avatar={/* index 아바타(스트리머 사진) 우선 */ member.avatar ?? detail?.avatar ?? undefined}
                     lastLogin={detail?.lastLogin}
                     seed={member.id}
                     slug={member.slug}

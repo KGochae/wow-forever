@@ -1,5 +1,6 @@
 // Blizzard 응답 → 사이트 데이터 형식 (Node 수집기 · Worker Update 버튼 공용)
 import { NS } from "./bnet.mjs";
+import { streamerOf } from "./streamers.mjs";
 
 export const SUB_ENDPOINTS = ["equipment", "statistics", "specializations", "character-media", "appearance"];
 
@@ -61,7 +62,9 @@ export function buildCharacter({ profile: p, equipment: eq, statistics: st, spec
     classId: p.character_class?.id, className: p.character_class?.name, raceId: p.race?.id, raceName: p.race?.name,
     gender: p.gender, faction: p.faction, guild: p.guild?.name, ilvl: p.equipped_item_level, avgIlvl: p.average_item_level,
     lastLogin: p.last_login_timestamp,
-    avatar: md?.assets?.find((a) => a.key === "avatar")?.value ?? null,
+    // 프로필 사진: 스트리머 사진(characterId 기준) 우선, 없으면 와우 캐릭터 아바타
+    avatar: streamerOf(p.id)?.image ?? md?.assets?.find((a) => a.key === "avatar")?.value ?? null,
+    wowAvatar: md?.assets?.find((a) => a.key === "avatar")?.value ?? null,
     render: md?.assets?.find((a) => a.key === "main-raw")?.value ?? null,
     spec: (act?.specializations ?? []).map((x) => ({ name: x.specialization_name ?? x.specialization?.name, points: x.spent_points })),
     talents: (act?.specializations ?? []).map((x) => ({
@@ -94,9 +97,16 @@ export async function fetchCharacterRaw(bnet, slug) {
 
 /** index.json 한 줄 (사이드바·검색용) */
 export function indexEntry(m, c) {
-  return {
+  return withStreamer({
     id: m.id, name: m.name, surname: m.surname, slug: m.slug,
     level: c?.level ?? m.level, classId: m.classId, raceId: m.raceId, rank: m.rank,
     avatar: c?.avatar ?? null, spec: c ? topSpec(c) : null, has: !!c,
-  };
+  });
+}
+
+/** index 항목에 스트리머 정보 적용 — 아바타를 스트리머 사진으로 교체 + streamer {name, soop} (이전 항목 재사용 시에도 매번 적용) */
+export function withStreamer(e) {
+  const s = streamerOf(e.id);
+  if (!s) { const { streamer: _, ...rest } = e; return rest; }
+  return { ...e, avatar: s.image, streamer: { name: s.name, soop: s.soop } };
 }

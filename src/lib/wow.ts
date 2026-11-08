@@ -44,6 +44,7 @@ export interface Member {
   avatar?: string | null; // index.json (사이드바용 경량 데이터)
   spec?: string | null;   // 대표 특성 (포인트 최다)
   has?: boolean;          // 상세 데이터(chars/{id}.json) 존재 여부
+  streamer?: { name: string; soop: string } | null; // 스트리머 (avatar = 스트리머 사진)
 }
 
 export interface EquipItem {
