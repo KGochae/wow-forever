@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Clock, RefreshCw, Shield } from "lucide-react";
+import { Clock, HelpCircle, RefreshCw, Shield } from "lucide-react";
 import { CLASS_INFO, specsOf, type Member } from "@/lib/wow";
 import { cn } from "@/lib/utils";
 import { FAN_NOTICE } from "@/lib/config";
@@ -26,6 +26,7 @@ export function GuildStatsDashboard() {
 
   const members = useMemo(() => index?.members ?? [], [index]);
   const total = members.length;
+  const noData = useMemo(() => (rank ? members.filter((m) => !rank.stats.has(m.id)) : []), [members, rank]);
 
   const levels = useMemo(() => {
     if (!total) return [];
@@ -75,6 +76,7 @@ export function GuildStatsDashboard() {
           <Card
             eyebrow="Leaderboard"
             title="직업별 스탯 리더보드"
+            titleExtra={noData.length > 0 ? <NoDataNote members={noData} /> : undefined}
             note={
               rank ? (
                 <div className="flex flex-wrap items-center gap-1.5">
@@ -152,7 +154,7 @@ function countBy(ms: Member[]) {
  * 패널 카드 — 어두운 반투명 면 + 얇은 테두리, 상단 하이라이트 라인, 헤더/본문 구분선
  * eyebrow: 사이트 로고와 같은 Cinzel 영문 소제목
  */
-function Card({ eyebrow, title, note, children }: { eyebrow?: string; title: string; note?: React.ReactNode; children: React.ReactNode }) {
+function Card({ eyebrow, title, titleExtra, note, children }: { eyebrow?: string; title: string; titleExtra?: React.ReactNode; note?: React.ReactNode; children: React.ReactNode }) {
   return (
     <section className="relative flex flex-col overflow-hidden rounded-xl border border-white/[.07] bg-[rgba(10,12,18,.72)] backdrop-blur-md">
       {/* 상단 하이라이트 라인 */}
@@ -160,12 +162,34 @@ function Card({ eyebrow, title, note, children }: { eyebrow?: string; title: str
       <header className="flex shrink-0 flex-wrap items-end justify-between gap-x-4 gap-y-1 border-b border-white/[.06] px-5 pb-3 pt-4">
         <div className="min-w-0">
           {eyebrow && <div className="font-display text-[10px] font-bold uppercase tracking-[3px] text-white/45">{eyebrow}</div>}
-          <h2 className="mt-0.5 text-[16px] font-extrabold tracking-[.2px] text-white">{title}</h2>
+          {/* relative: titleExtra 말풍선의 기준 — 좁은 화면에서도 카드 밖으로 잘리지 않도록 제목 왼쪽에 맞춤 */}
+          <div className="relative mt-0.5 flex flex-wrap items-center gap-x-2.5 gap-y-1">
+            <h2 className="text-[16px] font-extrabold tracking-[.2px] text-white">{title}</h2>
+            {titleExtra}
+          </div>
         </div>
         {note != null && (typeof note === "string" ? <span className="truncate pb-0.5 text-[12px] font-medium text-white/60">{note}</span> : note)}
       </header>
       <div className="flex flex-1 flex-col gap-3 p-5">{children}</div>
     </section>
+  );
+}
+
+/** 데이터 수집 불가능 멤버 — 물음표 hover/포커스 시 이름과 사유 표시 */
+function NoDataNote({ members }: { members: Member[] }) {
+  return (
+    <span className="inline-flex items-center gap-1 text-[11.5px] font-medium text-white/60">
+      데이터 수집 불가능 멤버 {members.length}명
+      <span tabIndex={0} aria-label="데이터 수집 불가능 멤버 안내" className="group inline-flex cursor-help rounded-full outline-none">
+        <HelpCircle className="h-3 w-3 transition-colors group-hover:text-white group-focus:text-white" />
+        <span role="tooltip" className="pointer-events-none absolute left-0 top-full z-30 mt-1.5 hidden w-[min(420px,calc(100vw-5rem))] rounded-md border border-white/15 bg-[#171a23] px-3 py-2.5 text-[12px] leading-relaxed text-white shadow-lg group-hover:block group-focus:block">
+          <span className="block font-bold">{members.map((m) => `${m.name} ${m.surname}`).join(", ")}</span>
+          <span className="mt-2 block border-t border-white/10 pt-2 text-white/70">
+            ※ 블리자드 계정 옵션 - [게임 데이터 및 프로필 공개 설정] 체크가 안 되어 있는 유저는 데이터 수집이 불가능합니다.
+          </span>
+        </span>
+      </span>
+    </span>
   );
 }
 

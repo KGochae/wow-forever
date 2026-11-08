@@ -63,7 +63,6 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
   const specs = specsOf(cls);
   const inClass = members.filter((m) => m.classId === cls && stats.has(m.id));
   const hasUnknown = inClass.some((m) => !m.spec || !specs.includes(m.spec));
-  const noData = members.filter((m) => m.classId === cls && !stats.has(m.id)).length;
 
   const rows = useMemo(() => {
     const list = inClass.filter((m) => spec === "all" || (spec === "none" ? !m.spec || !specs.includes(m.spec) : m.spec === spec));
@@ -138,21 +137,20 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
             </button>
           ))}
         </FilterGroup>
-        {noData > 0 && <span className="px-1 text-[11.5px] text-white/60">데이터 없음 {noData}명 제외</span>}
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col gap-3">
       {/* 표 */}
       <div className="no-scrollbar overflow-x-auto rounded-lg border border-white/[.06]">
-        <table className="w-full border-collapse text-[13.5px] text-white">
+        <table className="w-full border-collapse text-[15px] text-white">
           <thead>
             <tr className="border-b border-white/10 bg-white/[.03]">
-              <th className="sticky left-0 z-[1] w-12 bg-[#11131b] px-2 py-2.5 text-center text-[12px] font-bold text-white/70">순위</th>
-              <th className="sticky left-12 z-[1] w-[210px] min-w-[190px] bg-[#11131b] px-2 py-2.5 text-left text-[12px] font-bold text-white/70">캐릭터</th>
+              <th className="sticky left-0 z-[1] w-12 bg-[#11131b] px-2 py-2.5 text-center text-[13.5px] font-bold text-white/70">순위</th>
+              <th className="sticky left-12 z-[1] w-[230px] min-w-[210px] bg-[#11131b] px-2 py-2.5 text-left text-[13.5px] font-bold text-white/70">캐릭터</th>
               <th className="w-[60px] px-3 py-2.5 text-right">
                 <button
                   onClick={() => pickSort("level")}
-                  className={cn("inline-flex items-center gap-0.5 text-[12.5px] font-extrabold transition-colors", sortKey === "level" ? "" : "text-white/70 hover:text-white")}
+                  className={cn("inline-flex items-center gap-0.5 text-[14px] font-extrabold transition-colors", sortKey === "level" ? "" : "text-white/70 hover:text-white")}
                   style={sortKey === "level" ? { color } : undefined}
                 >
                   Lv
@@ -165,7 +163,7 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
                   <th key={c.k} className="px-3 py-2.5 text-right">
                     <button
                       onClick={() => pickSort(c.k)}
-                      className={cn("inline-flex items-center gap-0.5 whitespace-nowrap text-[12.5px] font-extrabold transition-colors", on ? "text-white" : "text-white/70 hover:text-white")}
+                      className={cn("inline-flex items-center gap-0.5 whitespace-nowrap text-[14px] font-extrabold transition-colors", on ? "text-white" : "text-white/70 hover:text-white")}
                       style={on ? { color } : undefined}
                     >
                       {c.l}
@@ -183,7 +181,7 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
               return (
                 <tr key={m.id} onClick={() => onPick(m)} className="group cursor-pointer border-b border-white/[.04] transition-colors hover:bg-white/[.05]">
                   <td className="sticky left-0 bg-[#0f1118] px-2 py-2 text-center group-hover:bg-[#171a23]" style={top3 ? { boxShadow: `inset 2px 0 0 ${["#f7cd4f", "#c9d3df", "#d89d62"][rank - 1]}` } : undefined}>
-                    <span className={cn("inline-flex h-7 min-w-7 items-center justify-center rounded-md px-1 text-[13.5px] font-black tabular-nums", top3 ? `medal medal-${rank}` : "text-white/90")}>
+                    <span className={cn("inline-flex h-7 min-w-7 items-center justify-center rounded-md px-1 text-[15px] font-black tabular-nums", top3 ? `medal medal-${rank}` : "text-white")}>
                       {rank ?? "-"}
                     </span>
                   </td>
@@ -196,17 +194,17 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
                         <span className="flex h-7 w-7 items-center justify-center rounded-full border text-[12px] font-bold" style={{ borderColor: `${color}66`, color }}>{m.name[0]}</span>
                       )}
                       <div className="flex min-w-0 flex-col leading-tight">
-                        <span className="max-w-[160px] truncate text-[13.5px] font-bold text-white" title={`${m.name} ${m.surname}`}>{m.name} {m.surname}</span>
-                        <span className="text-[11.5px] text-white/60">{m.spec ?? "알 수 없음"}</span>
+                        <span className="max-w-[180px] truncate text-[15px] font-bold text-white" title={`${m.name} ${m.surname}`}>{m.name} {m.surname}</span>
+                        <span className="text-[12.5px] text-white/60">{m.spec ?? "알 수 없음"}</span>
                       </div>
                     </div>
                   </td>
-                  <td className={cn("px-3 py-2 pr-[26px] text-right tabular-nums", sortKey === "level" ? "font-extrabold text-white" : "text-white/80")}>{m.level}</td>
+                  <td className={cn("px-3 py-2 pr-[26px] text-right tabular-nums", sortKey === "level" ? "font-extrabold text-white" : "text-white")}>{m.level}</td>
                   {columns.map((c) => {
                     const v = s?.[c.k] ?? null;
                     const on = c.k === sortKey;
                     return (
-                      <td key={c.k} className={cn("whitespace-nowrap px-3 py-2 text-right tabular-nums", on ? "font-extrabold" : "text-white/85")}>
+                      <td key={c.k} className={cn("whitespace-nowrap px-3 py-2 text-right tabular-nums", on ? "font-extrabold" : "text-white")}>
                         {on ? (
                           <div className="flex items-center justify-end gap-2">
                             <div className="hidden h-1.5 w-14 overflow-hidden rounded-full bg-white/[.08] sm:block">
