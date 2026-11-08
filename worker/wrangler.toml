@@ -1,0 +1,28 @@
+# WOW_FOREVER 전용 Worker (WEB_PROJECT의 wow-proxy와 별개)
+name = "wow-forever"
+main = "src/index.mjs"
+compatibility_date = "2025-09-01"
+
+# 데이터 (수집기·Update 버튼이 쓰고, 사이트가 읽음)
+[[r2_buckets]]
+binding = "DATA"
+bucket_name = "wow-forever-data"
+
+# 3D 모델 캐시 — 기존 버킷 재사용 (WEB_PROJECT는 tbc/ 경로, 여기는 classicplus/ 경로라 겹치지 않음)
+[[r2_buckets]]
+binding = "MODEL_CACHE"
+bucket_name = "wow-model-cache"
+
+# Update 버튼 쿨다운·IP 제한 (wrangler kv namespace create RATE 로 생성)
+[[kv_namespaces]]
+binding = "RATE"
+id = "9eea620a1f2e4f55914d38944026570a"
+
+[vars]
+REGION = "kr"
+# 사이트 주소 (Vercel 도메인 확정 후 추가)
+ALLOWED_ORIGINS = "http://localhost:3000"
+REFRESH_COOLDOWN_SEC = "600"
+REFRESH_IP_PER_HOUR = "20"
+
+# 시크릿 (wrangler secret put): BLIZZARD_CLIENT_ID, BLIZZARD_CLIENT_SECRET

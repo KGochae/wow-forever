@@ -1,0 +1,168 @@
+@import "tailwindcss";
+
+/* ── WEB_PROJECT(css/style.css) 토큰 이식 ── */
+:root {
+  --bg: #0a0b12;
+  --bg2: #0e1018;
+  --bg3: #14161f;
+  --bg4: #1a1d28;
+  --gold: #909090;
+  --gold2: #b0b0b0;
+  --gold3: #d0d0d0;
+  --border: rgba(255, 255, 255, 0.04);
+  --border2: rgba(255, 255, 255, 0.07);
+  --text: #e8e8e8;
+  --text1: #ffffff;
+  --text2: #d1d1d1;
+  --text3: #aaa9a9;
+  --text4: #363535;
+  --green: #5ab87a;
+  --red: #e05050;
+  --ps-red: #fca5a5;
+  --ps-blue: #93c5fd;
+  --ps-green: #86efac;
+  --ps-yellow: #fde68a;
+  --ps-purple: #d8b4fe;
+  --ps-orange: #fdba74;
+  --ps-teal: #67e8f9;
+  --accent: #e0457b;
+  --accent2: #ff7aa8;
+
+  --glass-bg-subtle: rgba(255, 255, 255, 0.025);
+  --glass-bg-elevated: rgba(22, 25, 36, 0.9);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.12);
+  --panel: rgba(8, 9, 13, 0.659);
+
+  --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif;
+  --font-display: "Cinzel", serif;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg2: var(--bg2);
+  --color-bg3: var(--bg3);
+  --color-bg4: var(--bg4);
+  --color-line: var(--border);
+  --color-line2: var(--border2);
+  --color-tx: var(--text);
+  --color-tx1: var(--text1);
+  --color-tx2: var(--text2);
+  --color-tx3: var(--text3);
+  --color-accent: var(--accent);
+  --color-accent2: var(--accent2);
+  --color-ps-yellow: var(--ps-yellow);
+  --color-ps-green: var(--ps-green);
+  --color-ps-blue: var(--ps-blue);
+  --color-ps-orange: var(--ps-orange);
+  --color-faint: var(--text3);
+  --color-gold: var(--gold3);
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+}
+
+@layer base {
+  * { border-color: var(--border); }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: var(--font-sans);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.01em;
+    background:
+      radial-gradient(ellipse 60% 50% at 15% 30%, rgba(34, 47, 84, 0.28) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 60% at 85% 70%, rgba(40, 60, 120, 0.22) 0%, transparent 55%),
+      radial-gradient(ellipse 70% 40% at 50% 100%, rgba(30, 50, 100, 0.16) 0%, transparent 50%),
+      var(--bg);
+  }
+  button { cursor: pointer; }
+  ::selection { background: var(--accent); color: #fff; }
+}
+
+/* 스크롤바: WEB_PROJECT 동일 (3px, 메인 영역은 숨김) */
+*::-webkit-scrollbar { width: 3px; height: 3px; }
+*::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 2px; }
+*::-webkit-scrollbar-track { background: transparent; }
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { width: 0; height: 0; }
+
+/* ── 애니메이션 (WEB_PROJECT keyframes) ── */
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+@keyframes fadeSlideUp { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: none } }
+@keyframes countUp { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: none } }
+@keyframes imgFadeIn { from { opacity: 0; transform: scale(1.03) } to { opacity: 1; transform: scale(1) } }
+@keyframes sidebarIn { from { opacity: 0; transform: translateX(-8px) } to { opacity: 1; transform: none } }
+@keyframes radarIn { from { opacity: 0; transform: scale(0.55) } to { opacity: 1; transform: scale(1) } }
+@keyframes rowIn { from { opacity: 0; transform: translateX(-6px) } to { opacity: 1; transform: none } }
+@keyframes sp { to { transform: rotate(360deg) } }
+@keyframes ttIn { from { opacity: 0; transform: translateY(4px) } to { opacity: 1; transform: none } }
+
+@layer utilities {
+  .font-display { font-family: var(--font-display); }
+  .anim-fade { animation: fadeIn 0.35s ease both; }
+  .anim-up { animation: fadeSlideUp 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+  .anim-count { animation: countUp 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+  .anim-img { animation: imgFadeIn 0.6s ease both; }
+  .anim-sidebar { animation: sidebarIn 0.3s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+  .anim-radar { animation: radarIn 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both; transform-origin: center; }
+  .anim-row { animation: rowIn 0.25s ease both; }
+
+  /* 성능: blur(50px) 제거 — 뒤 배경이 단순 그라데이션이라 흐림 결과 ≈ 단색. 매 프레임 흐림 재계산 비용 제거 */
+  .glass-panel {
+    background: rgba(9, 10, 15, 0.86);
+  }
+  .glass-subtle {
+    background: var(--glass-bg-subtle);
+  }
+  .glass-header {
+    background: rgba(14, 16, 24, 0.72);
+    backdrop-filter: blur(12px) saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    border-bottom: 1px solid var(--glass-border);
+  }
+}
+
+/* ── 장비 슬롯 (WEB_PROJECT .slot) ── */
+.slot {
+  width: 46px; height: 46px; background: var(--bg3);
+  border: 1.5px solid var(--border); border-radius: 4px;
+  position: relative; overflow: hidden; flex-shrink: 0;
+  transition: border-color 0.1s, transform 0.08s, box-shadow 0.1s;
+}
+.slot:hover { transform: scale(1.1); z-index: 10; }
+.slot:active { transform: scale(0.96); }
+.slot img { width: 100%; height: 100%; display: block; border-radius: 3px; }
+.slot[data-q="COMMON"] { border-color: rgba(255, 255, 255, 0.55); }
+.slot[data-q="UNCOMMON"] { border-color: rgba(30, 255, 0, 0.9); }
+.slot[data-q="RARE"] { border-color: rgba(0, 112, 221, 0.9); }
+.slot[data-q="EPIC"] { border-color: rgba(163, 53, 238, 0.9); }
+.slot[data-q="LEGENDARY"] { border-color: rgba(255, 128, 0, 0.95); }
+.slot[data-q="COMMON"]:hover { box-shadow: 0 0 10px rgba(255, 255, 255, 0.25); border-color: #fff; }
+.slot[data-q="UNCOMMON"]:hover { box-shadow: 0 0 10px rgba(30, 255, 0, 0.35); border-color: #1eff00; }
+.slot[data-q="RARE"]:hover { box-shadow: 0 0 10px rgba(0, 112, 221, 0.4); border-color: #0070dd; }
+.slot[data-q="EPIC"]:hover { box-shadow: 0 0 10px rgba(163, 53, 238, 0.4); border-color: #a335ee; }
+.slot[data-q="LEGENDARY"]:hover { box-shadow: 0 0 12px rgba(255, 128, 0, 0.45); border-color: #ff8000; }
+.slot[data-q="EMPTY"] { opacity: 0.4; cursor: default; }
+.slot[data-q="EMPTY"]:hover { transform: none; }
+
+/* ── 능력치 바 ── */
+.stat-bar { flex: 1; height: 8px; background: rgba(255, 255, 255, 0.05); border-radius: 4px; overflow: hidden; position: relative; }
+.stat-bar-fill { height: 100%; border-radius: 4px; transition: width 0.65s cubic-bezier(0.4, 0, 0.2, 1); }
+.stat-bar-base { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 4px; background: rgba(255, 255, 255, 0.28); transition: width 0.65s cubic-bezier(0.4, 0, 0.2, 1); }
+
+/* ── 툴팁 (WEB_PROJECT #tooltip) ── */
+.wow-tooltip {
+  position: fixed; z-index: 9999; pointer-events: none; width: 260px;
+  background: var(--bg3); border: 1px solid var(--border2); border-radius: 6px;
+  padding: 10px 12px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(130, 130, 130, 0.06);
+  animation: ttIn 0.12s ease both;
+}
+
+/* 로딩 스피너 */
+.spin { width: 24px; height: 24px; border: 2px solid rgba(130, 130, 130, 0.15); border-top-color: var(--gold3); border-radius: 50%; animation: sp 1s linear infinite; }
+
+/* 특성 패널 내부 스크롤: 스크롤 가능함이 보이도록 얇은 바 표시 */
+.talent-scroll { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.18) transparent; }
+.talent-scroll::-webkit-scrollbar { width: 6px; }
+.talent-scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.18); border-radius: 3px; }
+.talent-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.32); }

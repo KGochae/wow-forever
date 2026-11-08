@@ -1,0 +1,35 @@
+node_modules/
+/.next
+/out
+/build
+*.log
+.DS_Store
+.env*.local
+next-env.d.ts.timestamp
+
+# 수집 토큰·원본·캐시, 로컬 백업 (배포 제외)
+/_dev/api_test/out/
+/backup/
+
+# 수집기가 생성하는 로컬 데이터 (운영은 R2)
+/public/data/
+
+# Worker 로컬 시크릿·캐시
+/worker/.dev.vars
+/worker/.wrangler/
+
+/collector/node_modules/
+
+# 로컬 개발·테스트 폴더, Claude 설정 (배포 제외)
+/_dev/
+/.claude/
+*.tsbuildinfo
+
+# 루트 원본 이미지 (사용본은 public/background/zephras.jpg)
+/FOREVER_WALLPAPER.webp
+/WALLPAPER2.webp
+/zephras-isle-in-the-clouds-1440p.jpg
+
+# 기타 시크릿
+.dev.vars
+.token

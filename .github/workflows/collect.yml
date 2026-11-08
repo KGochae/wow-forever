@@ -1,0 +1,78 @@
+# 매시간 길드 수집 → wow-forever Worker → Cloudflare R2 (wow-forever-data)
+#   R2 API 키 없이 Worker의 /forever/ingest 로 업로드 (INGEST_TOKEN 인증)
+#
+# 필요한 저장소 설정 (Settings → Secrets and variables → Actions)
+#   Secrets : BLIZZARD_CLIENT_ID, BLIZZARD_CLIENT_SECRET, INGEST_TOKEN
+#   Variables (선택): WORKER_URL(기본 https://wow-forever.wowak.workers.dev), GUILD_SLUG(기본 같이와포하자), REGION(기본 kr)
+#
+# 수동 실행: Actions 탭 → collect → Run workflow (force=true 면 전원 재수집 + 특성 트리 재생성)
+name: collect
+
+on:
+  schedule:
+    # 매시 17분 (정각은 GitHub 예약 실행이 몰려 지연이 큼) — 실제 실행은 5~15분 늦어질 수 있음
+    - cron: "17 * * * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "전원 재수집 (첫 배포·데이터 형식 변경 시)"
+        type: boolean
+        default: false
+
+# 같은 시간대 실행이 겹치지 않게 (이전 실행이 끝날 때까지 대기)
+concurrency:
+  group: collect
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: write # 아래 keepalive (예약 실행 자동 비활성화 방지)
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: collector # 수집기만 받음 (사이트 코드 불필요)
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: collector/package-lock.json
+
+      - name: 수집기 패키지 설치
+        run: npm ci --prefix collector
+
+      - name: 수집 → Worker → R2
+        working-directory: collector
+        env:
+          BLIZZARD_CLIENT_ID: ${{ secrets.BLIZZARD_CLIENT_ID }}
+          BLIZZARD_CLIENT_SECRET: ${{ secrets.BLIZZARD_CLIENT_SECRET }}
+          INGEST_TOKEN: ${{ secrets.INGEST_TOKEN }}
+          WORKER_URL: ${{ vars.WORKER_URL || 'https://wow-forever.wowak.workers.dev' }}
+          GUILD_SLUG: ${{ vars.GUILD_SLUG || '같이와포하자' }}
+          REGION: ${{ vars.REGION || 'kr' }}
+          STORAGE: worker
+          FORCE: ${{ inputs.force && '1' || '0' }}
+        run: |
+          node collect.mjs 2>&1 | tee collect.log
+          {
+            echo "### 수집 결과"
+            echo '```'
+            cat collect.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # 공개 저장소의 예약 실행은 60일간 저장소 활동이 없으면 GitHub가 자동 비활성화함
+      # → 매주 월요일 03시(UTC) 회차에 이 워크플로를 다시 '활성화' 상태로 갱신 (커밋 없이 API만)
+      - name: keepalive (주 1회)
+        if: github.event_name == 'schedule' && github.event.schedule == '17 * * * *'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$(date -u +%u%H)" = "103" ]; then
+            gh api -X PUT "repos/${{ github.repository }}/actions/workflows/collect.yml/enable" && echo "keepalive ok"
+          fi
