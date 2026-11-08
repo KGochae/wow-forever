@@ -20,7 +20,7 @@ import { useRankData } from "@/lib/use-rank-data";
 export function GuildStatsDashboard() {
   const router = useRouter();
   const { index, loading, error } = useGuildIndex();
-  const { rank, error: rankError } = useRankData();
+  const { rank, error: rankError } = useRankData(index?.collectedAt);
   const [cls, setCls] = useState<number | null>(null);
   const [spec, setSpec] = useState<string>("all"); // "all" | 특성명 | "none"
 

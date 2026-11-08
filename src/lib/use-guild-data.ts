@@ -18,7 +18,8 @@ export interface GuildIndex {
 
 let indexPromise: Promise<GuildIndex> | null = null;
 function loadIndex() {
-  indexPromise ??= fetch(`${DATA_BASE}/index.json`).then((r) => {
+  // no-cache: 브라우저 HTTP 캐시(5분) 대신 매 진입 시 서버 재확인 (ETag → 변화 없으면 304) → 수집 직후 바로 반영
+  indexPromise ??= fetch(`${DATA_BASE}/index.json`, { cache: "no-cache" }).then((r) => {
     if (!r.ok) throw new Error(`index.json ${r.status}`);
     return r.json() as Promise<GuildIndex>;
   });
