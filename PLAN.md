@@ -473,17 +473,22 @@ WEB_PROJECT 방식: `generateModels(aspect, '#model_3d', {race, gender, customiz
 - [x] `collect` 수동 실행 1회 성공 (run 42454899820): 길드원 266명 · 변경 190명 · Blizzard 1,801요청 · 313초 → 운영 index.json `collectedAt` 갱신 확인. 이후 매시 17분 자동
 
 ### C. Vercel 배포 (사용자 계정 필요)
-- [ ] Vercel에서 GitHub 저장소 Import (Framework: Next.js)
-- [ ] 환경변수 3개
+- [x] Vercel CLI 65.12.1로 배포 (계정 `male960203-1260`, 팀 `chaechae`, 프로젝트 `wow-forever`) — 2026-11-08
+  - 운영 주소: **https://wafo-haja.vercel.app** (프로젝트 도메인으로 추가) / 기존 별칭 `wow-forever-bay.vercel.app`, `wow-forever-chaechae.vercel.app`도 유지
+  - 업로드 제외: `.vercelignore` (.env*.local·worker·collector·backup·_dev·원본 이미지)
+  - ⚠️ GitHub 자동 배포 미연결: `vercel git connect` 실패 (KGochae 계정에 Vercel GitHub 앱 미설치) → 코드 변경 시 `npx vercel deploy --prod` 수동 배포
+  - `vercel link`가 `.env.local` 끝에 `VERCEL_OIDC_TOKEN` 추가, `.gitignore`에 `.vercel` 추가
+- [x] 환경변수 3개 (Production·Preview)
   - `NEXT_PUBLIC_API_BASE=https://wow-forever.wowak.workers.dev`
   - `NEXT_PUBLIC_DATA_BASE=https://wow-forever.wowak.workers.dev/forever/data`
   - `NEXT_PUBLIC_MODEL_BASE=https://wow-forever.wowak.workers.dev/mv`
-- [ ] 배포 후 Vercel 주소 확인
+- [x] 배포 후 Vercel 주소 확인
 
 ### D. 마무리 (Claude 진행 가능)
-- [ ] Worker `ALLOWED_ORIGINS`에 Vercel 주소 추가 → `wrangler deploy` (안 하면 브라우저 CORS 차단)
-- [ ] `next.config.ts`의 `/mv` rewrite는 로컬 전용으로 유지 (운영은 MODEL_BASE로 Worker 직접)
-- [ ] 실서버 점검: 랜딩 검색 → 뷰어 → 3D → Update 버튼 → 1시간 뒤 자동 수집 반영
+- [x] Worker `ALLOWED_ORIGINS` = `wafo-haja` · `wow-forever-bay` · `wow-forever-chaechae` (.vercel.app) + `http://localhost:3000` → `wrangler deploy` (사용자 실행, Version 5d1d4871) — 백업 `backup/wrangler.before-vercel.toml`
+- [x] `next.config.ts`의 `/mv` rewrite는 로컬 전용으로 유지 (운영은 MODEL_BASE로 Worker 직접)
+- [~] 실서버 점검 (curl): `/`·`/viewer` 200, 번들에 Worker 주소 포함, index/chars/talents 200 + CORS 허용(wafo-haja), state 404, refresh 프리플라이트 204, 3D meta 200(X-Source r2)
+  - 남은 것: 브라우저에서 직접 검색 → 뷰어 → 3D → Update 클릭 확인, 매시 17분 자동 수집 반영 확인
 - [ ] 3D 1회 렌더 요청 수 실측 → Workers 무료 한도(10만/일, WEB_PROJECT와 계정 공유) 여유 확인
 - [ ] 푸터: 블리자드 API 이용 표기·팬사이트 고지, 파비콘·공유 미리보기, 404 페이지
 

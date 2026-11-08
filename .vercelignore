@@ -1,0 +1,15 @@
+# Vercel CLI 업로드 제외 (비밀값·로컬 전용)
+.env*.local
+.env
+.dev.vars
+.token
+.claude
+_dev
+backup
+worker
+collector
+public/data
+FOREVER_WALLPAPER.webp
+WALLPAPER2.webp
+zephras-isle-in-the-clouds-1440p.jpg
+*.tsbuildinfo

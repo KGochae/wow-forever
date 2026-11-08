@@ -33,3 +33,5 @@ next-env.d.ts.timestamp
 # 기타 시크릿
 .dev.vars
 .token
+
+.vercel

@@ -20,8 +20,8 @@ id = "9eea620a1f2e4f55914d38944026570a"
 
 [vars]
 REGION = "kr"
-# 사이트 주소 (Vercel 도메인 확정 후 추가)
-ALLOWED_ORIGINS = "http://localhost:3000"
+# 사이트 주소 (쉼표 구분: 운영 Vercel 대표 주소 2개 + 로컬)
+ALLOWED_ORIGINS = "https://wafo-haja.vercel.app,https://wow-forever-bay.vercel.app,https://wow-forever-chaechae.vercel.app,http://localhost:3000"
 REFRESH_COOLDOWN_SEC = "600"
 REFRESH_IP_PER_HOUR = "20"
 
