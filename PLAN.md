@@ -490,7 +490,13 @@ WEB_PROJECT 방식: `generateModels(aspect, '#model_3d', {race, gender, customiz
 - [~] 실서버 점검 (curl): `/`·`/viewer` 200, 번들에 Worker 주소 포함, index/chars/talents 200 + CORS 허용(wafo-haja), state 404, refresh 프리플라이트 204, 3D meta 200(X-Source r2)
   - 남은 것: 브라우저에서 직접 검색 → 뷰어 → 3D → Update 클릭 확인, 매시 17분 자동 수집 반영 확인
 - [ ] 3D 1회 렌더 요청 수 실측 → Workers 무료 한도(10만/일, WEB_PROJECT와 계정 공유) 여유 확인
-- [ ] 푸터: 블리자드 API 이용 표기·팬사이트 고지, 파비콘·공유 미리보기, 404 페이지
+  - 미측정: 브라우저 없이 3D 1회 요청 수를 셀 수 없음 → Cloudflare 대시보드(Workers → wow-forever → Metrics)에서 하루치 요청 수 확인 예정
+- [x] 푸터·파비콘·공유 미리보기·404 (2026-11-08, 운영 배포 완료) — 백업 `backup/layout.before-meta.tsx`, `landing.before-footer.tsx`, `guild-viewer.before-footer.tsx`
+  - 고지 문구 `FAN_NOTICE`(`src/lib/config.ts`): 블리자드 상표·비공식 팬사이트·Blizzard API 이용 — 랜딩 하단, 뷰어 푸터(md 이상), 404 하단
+  - 뷰어 푸터의 가짜 링크 "이용약관·개인정보처리방침"(페이지 없음) 삭제
+  - 파비콘 `src/app/icon.svg` (방패 + W, 회색 테두리·accent 핑크)
+  - 공유 미리보기 `src/app/opengraph-image.jpg` (1200×630, zephras 배경 + "같이와포하자 GUILD ARMORY", sharp로 생성) + `metadataBase`=`SITE_URL`, og/twitter 메타, themeColor
+  - 404 `src/app/not-found.tsx` (랜딩 배경, 처음으로·캐릭터 뷰어 버튼)
 
 ### 보류 (필요 시)
 - 성능 2·5번: 사이드바 행 애니메이션 상위 20개 제한, 2D 맞춤 CSS화 (18장)

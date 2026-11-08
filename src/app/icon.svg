@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- 방패 + W (WOW FOREVER 파비콘) -->
+  <path d="M32 3 L57 11 V30 C57 45 46 55 32 61 C18 55 7 45 7 30 V11 Z" fill="#0e1018" stroke="#d0d0d0" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M16 21 L22.5 45 L32 27 L41.5 45 L48 21" fill="none" stroke="#e0457b" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

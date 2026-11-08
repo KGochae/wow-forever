@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { CLASS_INFO, RANK_LABEL, specsOf, type Member } from "@/lib/wow";
 import { cn } from "@/lib/utils";
+import { FAN_NOTICE } from "@/lib/config";
 import { useCharacter, useGuildIndex } from "@/lib/use-guild-data";
 import { TopNav } from "@/components/layout/top-nav";
 import { FilterRail, type Filters } from "@/components/guild/filter-rail";
@@ -158,10 +159,10 @@ export function GuildViewer() {
           </main>
         </div>
 
-        <footer className="flex h-7 shrink-0 items-center justify-center gap-8 border-t border-line text-[10.5px] text-tx3/50">
-          <span>이용약관</span><span>개인정보처리방침</span>
-          <span>© 2026 WOW.FOREVER · Fan Site</span>
-          {index && <span>수집 {new Date(index.collectedAt).toLocaleString("ko-KR")}</span>}
+        <footer className="flex h-7 shrink-0 items-center justify-center gap-6 overflow-hidden whitespace-nowrap border-t border-line px-4 text-[10.5px] text-tx3/50">
+          <span>© 2026 WOW.FOREVER</span>
+          <span className="hidden md:inline">{FAN_NOTICE}</span>
+          {index && <span className="hidden sm:inline">수집 {new Date(index.collectedAt).toLocaleString("ko-KR")}</span>}
         </footer>
       </div>
     </ItemTooltipProvider>
