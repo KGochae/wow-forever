@@ -9,17 +9,12 @@ import { refreshCharacter } from "@/lib/use-guild-data";
 type State = { k: "idle" } | { k: "loading" } | { k: "done" } | { k: "cooldown"; until: number } | { k: "error"; msg: string };
 
 const fmtLeft = (s: number) => (s >= 60 ? `${Math.floor(s / 60)}분 ${s % 60}초` : `${s}초`);
-const ago = (iso?: string) => {
-  if (!iso) return null;
-  const m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-  return m < 1 ? "방금" : m < 60 ? `${m}분 전` : m < 1440 ? `${Math.floor(m / 60)}시간 전` : `${Math.floor(m / 1440)}일 전`;
-};
 
 /**
  * Update 버튼 — Worker /forever/refresh 로 Blizzard 실시간 조회
  * 캐릭터당 10분 쿨다운(서버), 블리자드 API는 로그아웃 후 반영
  */
-export function UpdateButton({ slug, collectedAt }: { slug: string; collectedAt?: string }) {
+export function UpdateButton({ slug }: { slug: string }) {
   const [st, setSt] = useState<State>({ k: "idle" });
   const [, tick] = useState(0);
 
@@ -70,9 +65,9 @@ export function UpdateButton({ slug, collectedAt }: { slug: string; collectedAt?
         {st.k === "done" ? <Check className="h-3.5 w-3.5" /> : <RotateCw className={cn("h-3.5 w-3.5", st.k === "loading" && "animate-spin")} />}
         {label}
       </button>
-      <span className="text-[10.5px] text-tx3">
-        {st.k === "error" ? st.msg : st.k === "cooldown" ? "잠시 후 다시 갱신할 수 있습니다" : collectedAt ? `${ago(collectedAt)} 갱신` : ""}
-      </span>
+      {(st.k === "error" || st.k === "cooldown") && (
+        <span className="text-[10.5px] text-tx3">{st.k === "error" ? st.msg : "잠시 후 다시 갱신할 수 있습니다"}</span>
+      )}
     </div>
   );
 }

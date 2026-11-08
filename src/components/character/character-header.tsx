@@ -14,11 +14,10 @@ interface Props {
   lastLogin?: number;
   seed: number;
   slug: string;
-  collectedAt?: string;
   soop?: string; // 스트리머 SOOP 아이디 → 방송국 링크
 }
 
-export function CharacterHeader({ name, surname, level, classId, specName, avatar, lastLogin, seed, slug, collectedAt, soop }: Props) {
+export function CharacterHeader({ name, surname, level, classId, specName, avatar, lastLogin, seed, slug, soop }: Props) {
   const cls = CLASS_INFO[classId];
   return (
     <div className="flex items-center gap-4 border-b border-line px-5 py-4">
@@ -76,7 +75,7 @@ export function CharacterHeader({ name, surname, level, classId, specName, avata
         </div>
       </div>
 
-      <UpdateButton key={slug} slug={slug} collectedAt={collectedAt} />
+      <UpdateButton key={slug} slug={slug} />
     </div>
   );
 }

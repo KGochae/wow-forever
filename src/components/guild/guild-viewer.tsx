@@ -146,7 +146,6 @@ export function GuildViewer() {
                     seed={member.id}
                     slug={member.slug}
                     soop={member.streamer?.soop}
-                    collectedAt={(detail as { collectedAt?: string } | null)?.collectedAt}
                   />
                 </div>
                 {charLoading ? (
