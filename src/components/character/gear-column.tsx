@@ -58,7 +58,7 @@ function Radar({ values, color }: { values: { label: string; v: number }[]; colo
       {values.map((v, i) => {
         const [x, y] = pt(i, R + 11);
         return (
-          <text key={v.label} x={x} y={y} fontSize="7.5" fontWeight="700" fill="#d1d1d1" textAnchor="middle" dominantBaseline="middle">
+          <text key={v.label} x={x} y={y} fontSize="10" fontWeight="700" fill="#d1d1d1" textAnchor="middle" dominantBaseline="middle">
             {v.label}
           </text>
         );

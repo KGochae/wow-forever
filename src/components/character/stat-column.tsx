@@ -67,7 +67,7 @@ function StatRow({ def, c, mode, color, max, on }: { def: StatDef; c: CharacterD
       <span className="w-[58px] shrink-0 text-right text-[15px] font-bold tabular-nums" style={{ color: v ? "var(--text)" : "var(--text3)" }}>
         {fmtStat(v, def.f)}
       </span>
-      <span className="w-[42px] shrink-0 text-right text-[11px] font-bold tabular-nums">
+      <span className="w-[42px] shrink-0 text-right text-[15px] font-bold tabular-nums">
         {mode === "effective" && diff > 0 && <span className="text-[var(--green)]">+{fmtStat(diff, def.f)}</span>}
         {mode === "effective" && diff < 0 && <span className="text-[var(--red)]">{fmtStat(diff, def.f)}</span>}
       </span>

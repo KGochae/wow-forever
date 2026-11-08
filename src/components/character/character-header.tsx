@@ -15,9 +15,10 @@ interface Props {
   seed: number;
   slug: string;
   collectedAt?: string;
+  soop?: string; // 스트리머 SOOP 아이디 → 방송국 링크
 }
 
-export function CharacterHeader({ name, surname, level, classId, specName, avatar, lastLogin, seed, slug, collectedAt }: Props) {
+export function CharacterHeader({ name, surname, level, classId, specName, avatar, lastLogin, seed, slug, collectedAt, soop }: Props) {
   const cls = CLASS_INFO[classId];
   return (
     <div className="flex items-center gap-4 border-b border-line px-5 py-4">
@@ -51,6 +52,20 @@ export function CharacterHeader({ name, surname, level, classId, specName, avata
             <span className="rounded border border-line2 bg-[rgba(130,130,130,.1)] px-[9px] py-0.5 text-[12px] font-bold tracking-[.3px] text-gold">
               {specName}
             </span>
+          )}
+          {/* SOOP 방송국 링크 (WEB_PROJECT .cbadge-soop — 파랑→보라 그라데이션, 크기는 특성 태그와 동일) */}
+          {soop && (
+            <a
+              href={`https://www.sooplive.co.kr/station/${encodeURIComponent(soop)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="SOOP 방송국"
+              aria-label="SOOP 방송국"
+              className="flex items-center self-stretch rounded border border-transparent bg-[linear-gradient(135deg,#3b5bdb,#7048e8)] px-[9px] py-0.5 text-[12px] font-bold tracking-[.3px] transition-[filter] hover:brightness-115"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/images/logo/SOOP_LOGO_White.svg" alt="SOOP" className="block h-[11px] w-auto" />
+            </a>
           )}
           {lastLogin && (
             <span className="ml-1.5 flex items-center gap-1 text-[13px] font-semibold text-tx2">
