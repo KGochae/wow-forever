@@ -25,7 +25,7 @@ export function GuildViewer() {
   const router = useRouter();
   const params = useSearchParams();
   const { index, loading, error } = useGuildIndex();
-  const [tab, setTab] = useState("viewer");
+  const tab = params.get("tab") === "raid" ? "raid" : "viewer"; // /viewer?tab=raid — 다른 페이지에서도 바로 진입
   const [filters, setFilters] = useState<Filters>({ rank: "all", classId: "all", spec: "all" });
   const [collapsed, setCollapsed] = useState(false);
 
@@ -68,10 +68,19 @@ export function GuildViewer() {
   );
   const selectedId = member?.id;
 
+  const onTab = (k: string) => {
+    if (k === "stats") return router.push("/stats");
+    const q = new URLSearchParams(params); // 선택한 캐릭터(c)는 유지
+    if (k === "raid") q.set("tab", "raid");
+    else q.delete("tab");
+    const s = q.toString();
+    router.replace(s ? `/viewer?${s}` : "/viewer", { scroll: false });
+  };
+
   return (
     <ItemTooltipProvider>
       <div className="flex h-screen flex-col overflow-hidden">
-        <TopNav active={tab} onTab={(k) => (k === "stats" ? router.push("/stats") : setTab(k))} members={index?.members ?? null} onPick={select} />
+        <TopNav active={tab} onTab={onTab} members={index?.members ?? null} onPick={select} />
 
         <div className="flex min-h-0 flex-1">
           {/*

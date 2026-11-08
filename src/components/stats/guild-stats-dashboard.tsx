@@ -60,7 +60,7 @@ export function GuildStatsDashboard() {
     setSpec("all");
   };
   const pick = (m: Member) => router.push(`/viewer?c=${encodeURIComponent(m.slug)}`);
-  const onTab = (k: string) => k === "viewer" && router.push("/viewer");
+  const onTab = (k: string) => k !== "stats" && router.push(k === "raid" ? "/viewer?tab=raid" : "/viewer");
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
