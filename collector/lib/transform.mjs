@@ -11,7 +11,8 @@ export function flatStats(s) {
     if (k === "_links" || k === "character") continue;
     if (k === "power_type") { o.power_type = v?.name ?? null; continue; }
     if (v && typeof v === "object") {
-      if ("effective" in v) { o[`${k}_base`] = v.base; o[`${k}_effective`] = v.effective; }
+      // base 음수가 부호 없는 32비트로 오는 경우 복원 (4294967284 → -12)
+      if ("effective" in v) { o[`${k}_base`] = v.base | 0; o[`${k}_effective`] = v.effective; }
       else if ("value" in v) o[k] = v.value;
     } else o[k] = v;
   }

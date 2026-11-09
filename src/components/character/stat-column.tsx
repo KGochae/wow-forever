@@ -1,8 +1,9 @@
 "use client";
 
 import { useLayoutEffect, useRef, useState } from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, HelpCircle, TriangleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useItemTooltip } from "@/components/common/item-tooltip";
 import { useMounted } from "@/components/common/use-mounted";
 import { classColor, num, type CharacterDetail } from "@/lib/wow";
 import { fmtStat, statPages, type StatDef } from "@/lib/stats-config";
@@ -30,6 +31,12 @@ function Card({ label, value, sub, delay = 0 }: { label: string; value: string; 
   );
 }
 
+/** 기본 수치 — 이미 수집된 데이터의 부호 없는 32비트 음수를 복원 (4294967284 → -12) */
+const baseNum = (s: CharacterDetail["stats"], k: string) => {
+  const v = num(s, k);
+  return v == null ? null : v | 0;
+};
+
 /**
  * 막대 스케일 그룹 — 길드 비교 없이, 같은 탭 안에서 단위가 비슷한 항목끼리 최댓값 기준
  * (생명력처럼 큰 값이 민첩 같은 작은 값을 눌러버리지 않도록 분리)
@@ -38,13 +45,14 @@ const POOL_KEYS = new Set(["health", "power", "armor_effective", "bonus_armor"])
 export const scaleGroup = (d: StatDef) => (d.f === "pct" ? "pct" : d.f === "dps" ? "dps" : POOL_KEYS.has(d.k) ? "pool" : "attr");
 
 /**
- * WEB_PROJECT .stat-row: 라벨 | 막대 | 값 | 증가분
+ * WEB_PROJECT .stat-row: 라벨 | 막대 | 값 (증가분은 초록 구간 hover 툴팁)
  * 최종 모드: [기본 구간(직업색)] + [장비·버프 증가 구간(초록)]
  * 기본 모드: 기본 구간만 (같은 스케일이라 줄어든 만큼이 장비·버프 효과)
  */
 function StatRow({ def, c, mode, color, max, on }: { def: StatDef; c: CharacterDetail; mode: Mode; color: string; max: number; on: boolean }) {
+  const tt = useItemTooltip();
   const eff = num(c.stats, def.k);
-  const base = def.baseKey ? num(c.stats, def.baseKey) : null;
+  const base = def.baseKey ? baseNum(c.stats, def.baseKey) : null;
   const split = base != null && eff != null;
   const v = mode === "base" && split ? base : eff;
   const diff = split ? eff! - base! : 0;
@@ -54,24 +62,66 @@ function StatRow({ def, c, mode, color, max, on }: { def: StatDef; c: CharacterD
   const baseW = mode === "effective" && split && diff > 0 ? w(base) : w(v);
   const bonusW = mode === "effective" && split && diff > 0 ? w(eff) - w(base) : 0;
 
+  const tip = (
+    <div className="space-y-1 text-[13px]">
+      <div className="font-bold text-tx">{def.l}</div>
+      <TipRow label="기본 수치" value={fmtStat(base, def.f)} />
+      <TipRow label="장비·버프" value={`+${fmtStat(diff, def.f)}`} color="var(--green)" />
+      <TipRow label="최종 수치" value={fmtStat(eff, def.f)} />
+    </div>
+  );
+
   return (
     <div className="mb-[9px] flex items-center gap-2 last:mb-0">
       <span className="w-[86px] shrink-0 truncate text-[13px] font-bold text-tx2">{def.l}</span>
-      <div className="stat-bar flex">
-        <div className="stat-bar-fill shrink-0" style={{ width: `${baseW}%`, background: `linear-gradient(90deg, ${color}66, ${color})`, borderRadius: bonusW > 0 ? "4px 0 0 4px" : undefined }} />
-        <div
-          className="stat-bar-fill shrink-0"
-          style={{ width: `${bonusW}%`, background: "linear-gradient(90deg, #3d9a5c, #5fd68a)", borderRadius: "0 4px 4px 0" }}
-        />
+      <div data-stat-bar={def.k} className="relative -my-1.5 flex min-w-0 flex-1 items-center py-1.5">
+        {/* 늘어난 구간(초록)만 hover — 막대가 8px로 얇아 투명 영역으로 위아래를 넓힘 */}
+        {bonusW > 0 && (
+          <div
+            data-stat-bonus={def.k}
+            className="absolute inset-y-0 z-10"
+            style={{ left: `${baseW}%`, width: `${bonusW}%` }}
+            onMouseEnter={(e) => tt.showNode(`stat-${def.k}`, tip, e)}
+            onMouseMove={tt.move}
+            onMouseLeave={tt.hide}
+          />
+        )}
+        <div className="stat-bar flex">
+          <div className="stat-bar-fill shrink-0" style={{ width: `${baseW}%`, background: `linear-gradient(90deg, ${color}66, ${color})`, borderRadius: bonusW > 0 ? "4px 0 0 4px" : undefined }} />
+          <div
+            className="stat-bar-fill shrink-0"
+            style={{ width: `${bonusW}%`, background: "linear-gradient(90deg, #3d9a5c, #5fd68a)", borderRadius: "0 4px 4px 0" }}
+          />
+        </div>
       </div>
       <span className="w-[58px] shrink-0 text-right text-[15px] font-bold tabular-nums" style={{ color: v ? "var(--text)" : "var(--text3)" }}>
         {fmtStat(v, def.f)}
       </span>
-      <span className="w-[42px] shrink-0 text-right text-[15px] font-bold tabular-nums">
-        {mode === "effective" && diff > 0 && <span className="text-[var(--green)]">+{fmtStat(diff, def.f)}</span>}
-        {mode === "effective" && diff < 0 && <span className="text-[var(--red)]">{fmtStat(diff, def.f)}</span>}
-      </span>
     </div>
+  );
+}
+
+function TipRow({ label, value, color }: { label: string; value: string; color?: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-tx2">{label}</span>
+      <span className="font-bold tabular-nums text-tx" style={color ? { color } : undefined}>{value}</span>
+    </div>
+  );
+}
+
+const MODE_HELP = "기본 수치: 장비·버프를 제외한 캐릭터 자체 수치. 최종 수치: 기본 수치에 장비·마법부여·버프를 반영한 값.";
+
+/** 기본/최종 수치 설명 — hover·키보드 포커스 시 표시 */
+function ModeHelp() {
+  return (
+    <span tabIndex={0} aria-label={MODE_HELP} className="group relative inline-flex shrink-0 cursor-help rounded-full outline-none">
+      <HelpCircle className="h-3.5 w-3.5 text-tx3 transition-colors group-hover:text-tx group-focus:text-tx" />
+      <span role="tooltip" className="pointer-events-none absolute right-0 top-full z-20 mt-1.5 hidden w-[230px] space-y-1 break-keep rounded-[5px] border border-line bg-bg3 px-2.5 py-2 text-[12px] font-medium normal-case leading-snug tracking-normal text-tx2 shadow-lg group-hover:block group-focus:block">
+        <span className="block"><b className="text-tx1">기본 수치</b> 장비·버프를 제외한 캐릭터 자체 수치</span>
+        <span className="block"><b className="text-tx1">최종 수치</b> 기본 수치에 장비·마법부여·버프를 반영한 값 <span className="text-[var(--green)]">(초록 = 늘어난 양)</span></span>
+      </span>
+    </span>
   );
 }
 
@@ -114,7 +164,7 @@ function StatPager({ c }: { c: CharacterDetail }) {
       tabIndex={0}
       onKeyDown={(e) => { if (e.key === "ArrowLeft") go(-1); if (e.key === "ArrowRight") go(1); }}
     >
-      <SectionTitle right={<ModeToggle mode={mode} onChange={setMode} />}>
+      <SectionTitle right={<div className="flex shrink-0 items-center gap-1.5"><ModeHelp /><ModeToggle mode={mode} onChange={setMode} /></div>}>
         <span key={page.key} className="anim-fade inline-block">
           {page.title}
           {idx === 0 && <span style={{ color: col }}> · {c.className}</span>}
@@ -156,7 +206,7 @@ function StatPager({ c }: { c: CharacterDetail }) {
             // 탭 안 그룹별 최댓값 (최종값 기준 → 기본 모드에서 줄어드는 만큼이 장비·버프 효과)
             const gmax: Record<string, number> = {};
             for (const d of p.defs) {
-              const g = scaleGroup(d), e = num(c.stats, d.k) ?? 0, b = d.baseKey ? num(c.stats, d.baseKey) ?? 0 : 0;
+              const g = scaleGroup(d), e = num(c.stats, d.k) ?? 0, b = d.baseKey ? baseNum(c.stats, d.baseKey) ?? 0 : 0;
               gmax[g] = Math.max(gmax[g] ?? 0, e, b);
             }
             return (
@@ -167,19 +217,6 @@ function StatPager({ c }: { c: CharacterDetail }) {
               </div>
             );
           })}
-        </div>
-      </div>
-      {/* 기본 / 최종 설명 — 현재 모드만 밝게 */}
-      <div className="mt-3 space-y-1 rounded-md border border-line bg-white/[.02] px-2.5 py-2 text-[11px] leading-snug">
-        <div className={cn("flex items-start gap-2 transition-opacity", mode === "base" ? "opacity-100" : "opacity-45")}>
-          <span className="mt-[3px] h-1.5 w-3 shrink-0 rounded-full" style={{ background: `linear-gradient(90deg, ${col}66, ${col})` }} />
-          <span className="w-[52px] shrink-0 font-bold text-tx1">기본 수치</span>
-          <span className="text-tx2">종족·레벨로 정해진 값 (장비·버프 제외)</span>
-        </div>
-        <div className={cn("flex items-start gap-2 transition-opacity", mode === "effective" ? "opacity-100" : "opacity-45")}>
-          <span className="mt-[3px] h-1.5 w-3 shrink-0 rounded-full bg-gradient-to-r from-[#3d9a5c] to-[#5fd68a]" />
-          <span className="w-[52px] shrink-0 font-bold text-tx1">최종 수치</span>
-          <span className="text-tx2">기본 수치에 장비·버프를 더한 값 <span className="text-[var(--green)]">(초록 = 늘어난 양)</span></span>
         </div>
       </div>
     </section>
@@ -196,13 +233,18 @@ export function StatColumn({ c }: { c?: CharacterDetail }) {
     );
   }
   const s = c.stats;
+  // 최종 < 기본이면 부활 후유증·디버프가 걸린 채 수집된 값 (5대 능력치 기준)
+  const debuffed = ["strength", "agility", "intellect", "stamina", "spirit"].some((k) => {
+    const eff = num(s, `${k}_effective`), base = num(s, `${k}_base`);
+    return eff != null && base != null && eff < base;
+  });
   const caster = [5, 8, 9].includes(c.classId);
   const hp = num(s, "health"), pw = num(s, "power"), main = num(s, caster ? "spell_power" : "attack_power"), ar = num(s, "armor_effective");
-  const armorBonus = (num(s, "armor_effective") ?? 0) - (num(s, "armor_base") ?? 0);
+  const armorBonus = (ar ?? 0) - (baseNum(s, "armor_base") ?? 0);
 
   return (
     <div className="glass-panel no-scrollbar min-w-0 overflow-y-auto">
-      <PanelHd />
+      <PanelHd debuffed={debuffed} />
 
       <section className="border-b border-line px-3 py-3.5">
         <div className="grid grid-cols-2 gap-[5px]">
@@ -241,10 +283,21 @@ export function StatColumn({ c }: { c?: CharacterDetail }) {
   );
 }
 
-function PanelHd() {
+const DEBUFF_HELP = "로그아웃할 때 부활 후유증이나 디버프가 걸려 있어 일부 능력치가 기본 수치보다 낮게 수집될 수 있습니다. ";
+
+function PanelHd({ debuffed = false }: { debuffed?: boolean }) {
   return (
-    <div className="flex h-10 items-center gap-1 border-b border-line px-4 text-[13px] font-extrabold text-tx1">
+    <div className="flex h-10 items-center justify-between gap-2 border-b border-line px-4 text-[13px] font-extrabold text-tx1">
       능력치
+      {debuffed && (
+        <span tabIndex={0} aria-label={`부활 후유증 및 디버프. ${DEBUFF_HELP}`} className="group relative inline-flex shrink-0 cursor-help items-center gap-1 rounded-full border border-red-400/40 bg-red-500/10 px-2 py-[3px] text-[11px] font-bold text-[var(--red)] outline-none">
+          <TriangleAlert className="h-3 w-3" />
+          부활 후유증 및 디버프
+          <span role="tooltip" className="pointer-events-none absolute right-0 top-full z-20 mt-1.5 hidden w-[230px] break-keep rounded-[5px] border border-line bg-bg3 px-2.5 py-2 text-[12px] font-medium leading-snug text-tx2 shadow-lg group-hover:block group-focus:block">
+            {DEBUFF_HELP}
+          </span>
+        </span>
+      )}
     </div>
   );
 }

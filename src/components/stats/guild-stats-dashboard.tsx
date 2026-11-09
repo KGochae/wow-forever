@@ -80,7 +80,7 @@ export function GuildStatsDashboard() {
             note={
               rank ? (
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <InfoChip icon={Shield}>로그아웃 시점 최종수치 <span className="text-white/50">· 장비·특성 포함</span></InfoChip>
+                  <InfoChip icon={Shield}>로그아웃 시점 최종수치 <span className="text-white/50">· 장비·특성·버프 포함</span></InfoChip>
                   <InfoChip icon={Clock}>{fmtTime(rank.collectedAt)} 기준</InfoChip>
                   <InfoChip icon={RefreshCw}>한시간 마다 갱신</InfoChip>
                 </div>
