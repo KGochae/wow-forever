@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronRight } from "lucide-react";
-import { CLASS_INFO, RANK_LABEL, specsOf, type Member } from "@/lib/wow";
+import { CLASS_INFO, byClassName, RANK_LABEL, specsOf, type Member } from "@/lib/wow";
 import { cn } from "@/lib/utils";
 import { FAN_NOTICE } from "@/lib/config";
 import { useCharacter, useGuildIndex } from "@/lib/use-guild-data";
@@ -61,7 +61,7 @@ export function GuildViewer() {
 
   const ranks = useMemo(() => [...new Set(members.map((m) => m.rank))].sort((a, b) => a - b), [members]);
   const classes = useMemo(
-    () => [...new Set(members.map((m) => m.classId))].sort((a, b) => a - b)
+    () => [...new Set(members.map((m) => m.classId))].sort(byClassName)
       .map((id) => ({ id, ...(CLASS_INFO[id] ?? { name: String(id), color: "#aaa" }) })),
     [members]
   );

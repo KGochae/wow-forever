@@ -140,6 +140,19 @@ export function LevelDistChart({
 }) {
   const { tip, show, hide } = useChartTip();
   const max = Math.max(1, ...levels.map((l) => all.get(l) ?? 0));
+
+  // X축 라벨 간격: 막대 한 칸 폭에 맞춰 1·2·5·10 단위로 건너뜀 (라벨 하나에 약 30px 확보)
+  const axisRef = useRef<HTMLDivElement>(null);
+  const [axisW, setAxisW] = useState(0);
+  useEffect(() => {
+    const el = axisRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) => setAxisW(e.contentRect.width));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const colW = levels.length ? axisW / levels.length : 0;
+  const step = colW ? [1, 2, 5, 10, 20].find((s) => s * colW >= 30) ?? 20 : 5;
   return (
     <div className="flex h-full flex-col text-fl-2xs">
       <div className="relative min-h-0 flex-1 pl-[3em]">
@@ -188,10 +201,14 @@ export function LevelDistChart({
           })}
         </div>
       </div>
-      <div className="flex pl-[3em] pt-1.5">
-        {levels.map((l, i) => (
-          <span key={l} className={cn("flex-1 text-center tabular-nums text-white", i % 2 && i !== levels.length - 1 && "max-md:invisible")}>{l}</span>
-        ))}
+      <div className="pl-[3em] pt-1.5">
+        <div ref={axisRef} className="flex h-[1.5em]">
+          {levels.map((l) => (
+            <span key={l} className="relative min-w-0 flex-1">
+              {l % step === 0 && <span className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap tabular-nums text-white">{l}</span>}
+            </span>
+          ))}
+        </div>
       </div>
       <ChartTip tip={tip} />
     </div>

@@ -10,7 +10,7 @@ import { useGuildIndex } from "@/lib/use-guild-data";
 import { TopNav } from "@/components/layout/top-nav";
 import { ClassTreemap, LevelDistChart } from "@/components/stats/level-charts";
 import { StatLeaderboard } from "@/components/stats/stat-leaderboard";
-import { ActivityBars } from "@/components/stats/activity-card";
+import { ActivityBars, GuildKpis } from "@/components/stats/activity-card";
 
 /** 접속 현황 카드 — 접속 시각(rank.json last_login) 수집 전까지 숨김. 다시 보이려면 true */
 const SHOW_ACTIVITY = false;
@@ -77,6 +77,7 @@ export function GuildStatsDashboard() {
           <Center><div className="spin" /><span className="mt-2">길드 데이터 불러오는 중…</span></Center>
         ) : (
           <div className="anim-up mx-auto flex w-full max-w-[1800px] flex-col gap-[clamp(12px,1.2vw,22px)]">
+          <GuildKpis members={members} stats={rank?.stats ?? null} />
           <Card
             eyebrow="Leaderboard"
             title="직업별 스탯 리더보드"

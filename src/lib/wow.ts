@@ -12,6 +12,10 @@ export const CLASS_INFO: Record<number, { name: string; color: string }> = {
   9: { name: "흑마법사", color: "#9482c9" },
   11: { name: "드루이드", color: "#ff7c0a" },
 };
+
+/** 직업 id 정렬 — 한글 이름순 (모든 직업 필터 공통) */
+export const byClassName = (a: number, b: number) =>
+  (CLASS_INFO[a]?.name ?? String(a)).localeCompare(CLASS_INFO[b]?.name ?? String(b), "ko");
 export const classColor = (id?: number) => (id != null && CLASS_INFO[id]?.color) || "#a0a0a0";
 
 export const RACE_NAME: Record<number, string> = {

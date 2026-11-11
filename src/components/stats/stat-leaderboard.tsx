@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
-import { CLASS_INFO, specsOf, timeAgo, type Member } from "@/lib/wow";
+import { byClassName, CLASS_INFO, specsOf, timeAgo, type Member } from "@/lib/wow";
 import { cn } from "@/lib/utils";
 import type { RankStats } from "@/lib/use-rank-data";
 
@@ -46,7 +46,7 @@ const fmt = (k: string, v: number | null | undefined) => {
 };
 
 const PAGE = 30;
-const CLASS_ORDER = [1, 2, 3, 4, 5, 7, 8, 9, 11];
+const CLASS_ORDER = [1, 2, 3, 4, 5, 7, 8, 9, 11].sort(byClassName); // 이름순
 
 /* 고정 열(순위·캐릭터) — th/td 모두 같은 글자 크기(text-fl-base)라 em 기준 위치가 일치 */
 const RANK_W = "w-[3.4em] min-w-[3.4em]";
@@ -106,6 +106,34 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
     return o;
   }, [rows, columns, stats]);
   const animKey = `${cls}|${spec}|${sortKey}|${dir}|${cur}`; // 바뀌면 행 애니메이션 다시 재생
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { scrollRef.current?.scrollTo({ top: 0 }); }, [animKey]); // 조건이 바뀌면 표 맨 위로
+
+  // 가로 스크롤 상태 — 열이 많아 넘칠 때만 좌우 버튼·오른쪽 흐림 표시
+  // 위쪽 가로 스크롤바(topRef)와 표(scrollRef)의 가로 위치를 서로 맞춤
+  const topRef = useRef<HTMLDivElement>(null);
+  const [hx, setHx] = useState({ over: false, left: false, right: false, max: 0 });
+  const syncX = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    if (topRef.current && Math.abs(topRef.current.scrollLeft - el.scrollLeft) > 1) topRef.current.scrollLeft = el.scrollLeft;
+    const next = { over: max > 2, left: el.scrollLeft > 2, right: el.scrollLeft < max - 2, max };
+    setHx((p) => (p.over === next.over && p.left === next.left && p.right === next.right && p.max === next.max ? p : next));
+  };
+  const onTopScroll = () => {
+    const t = topRef.current, el = scrollRef.current;
+    if (t && el && Math.abs(el.scrollLeft - t.scrollLeft) > 1) el.scrollLeft = t.scrollLeft;
+  };
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    syncX();
+    const ro = new ResizeObserver(syncX);
+    ro.observe(el);
+    if (el.firstElementChild) ro.observe(el.firstElementChild);
+    return () => ro.disconnect();
+  }, [cls]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const pickClass = (id: number) => { setCls(id); setSpec("all"); setSort(null); setPage(0); };
   const pickSort = (k: string) => {
@@ -116,9 +144,9 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
     on ? (dir === "desc" ? <ChevronDown className="h-[.9em] w-[.9em]" /> : <ChevronUp className="h-[.9em] w-[.9em]" />) : null;
 
   return (
-    <div className="flex flex-col gap-[clamp(10px,1vw,18px)] lg:flex-row lg:items-start">
-      {/* 필터: 모바일 = 위쪽 가로 칩 / lg↑ = 왼쪽 세로 사이드 (sticky) */}
-      <aside className="flex flex-col gap-[clamp(6px,.6vw,10px)] lg:sticky lg:top-0 lg:w-[clamp(170px,11vw,220px)] lg:shrink-0 lg:gap-[clamp(14px,1.2vw,22px)]">
+    <div className="flex flex-col gap-[clamp(10px,1vw,18px)] lg:flex-row lg:items-stretch">
+      {/* 필터: 모바일 = 위쪽 가로 칩 / lg↑ = 왼쪽 세로 사이드 — 이 사이드 높이가 곧 표 높이 */}
+      <aside className="flex flex-col gap-[clamp(6px,.6vw,10px)] lg:w-[clamp(120px,7.5vw,150px)] lg:shrink-0 lg:gap-[clamp(14px,1.2vw,22px)]">
         <ChipRow title="클래스">
           {classes.map((id) => {
             const c = CLASS_INFO[id];
@@ -138,26 +166,37 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
         </ChipRow>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-[clamp(10px,1vw,18px)]">
+      {/* lg↑: 표 영역은 absolute → 높이는 사이드 필터에 맞추고, 행은 안에서 세로 스크롤 (머리글 고정) */}
+      <div className="relative min-w-0 flex-1">
+      <div className="flex flex-col gap-[clamp(10px,1vw,18px)] lg:absolute lg:inset-0">
 
-      {/* 표 */}
-      <div className="no-scrollbar overflow-x-auto rounded-lg border border-white/[.06]">
+      {/* 열이 넘칠 때: 표 위쪽 작은 가로 스크롤바 (표 폭 + 넘친 만큼의 빈 칸 → 표와 같은 비율로 연동) */}
+      {hx.over && (
+        <div ref={topRef} onScroll={onTopScroll} className="top-scroll -mb-[clamp(6px,.6vw,12px)] shrink-0 overflow-x-auto overflow-y-hidden">
+          <div className="h-px" style={{ width: `calc(100% + ${hx.max}px)` }} />
+        </div>
+      )}
+
+      {/* 표 (+ 오른쪽에 더 있으면 흐림) */}
+      <div className="relative flex min-h-0 flex-col lg:flex-1">
+      {hx.right && <div className="pointer-events-none absolute inset-y-0 right-0 z-[4] w-[clamp(28px,4vw,64px)] rounded-r-lg bg-gradient-to-l from-[#0b0d13] to-transparent" />}
+      <div ref={scrollRef} onScroll={syncX} className="table-scroll no-hbar overflow-x-auto rounded-lg border border-white/[.06] lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
         <table className="w-full border-collapse text-fl-base text-white">
           <thead>
-            <tr className="border-b border-white/10 bg-white/[.03]">
-              <th className={cn("sticky left-0 z-[1] bg-[#11131b] text-center font-bold text-white", RANK_W, CELL)}>
+            <tr className="[&>th]:sticky [&>th]:top-0 [&>th]:bg-[#11131b] [&>th]:shadow-[inset_0_-1px_0_rgba(255,255,255,.1)]">
+              <th className={cn("left-0 z-[3] text-center font-bold text-white", RANK_W, CELL)}>
                 <span className="text-[.88em]">순위</span>
               </th>
-              <th className={cn("sticky z-[1] bg-[#11131b] text-left font-bold text-white", NAME_LEFT, CELL)}>
+              <th className={cn("z-[3] text-left font-bold text-white", NAME_LEFT, CELL)}>
                 <span className="text-[.88em]">캐릭터</span>
               </th>
-              <th className={cn("whitespace-nowrap text-center font-bold text-white", CELL)}>
+              <th className={cn("z-[2] whitespace-nowrap text-center font-bold text-white", CELL)}>
                 <span className="text-[.88em]">기준</span>
               </th>
               {[{ k: "level", l: "Lv" }, ...columns].map((c) => {
                 const on = c.k === sortKey;
                 return (
-                  <th key={c.k} className={cn("text-center", CELL)}>
+                  <th key={c.k} className={cn("z-[2] text-center", CELL)}>
                     <button
                       onClick={() => pickSort(c.k)}
                       className={cn("inline-flex items-center justify-center gap-[.15em] whitespace-nowrap text-[.92em] font-extrabold text-white transition-opacity", !on && "hover:opacity-80")}
@@ -229,10 +268,11 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
           </tbody>
         </table>
       </div>
+      </div>
 
       {/* 페이지 */}
       {pages > 1 && (
-        <div className="flex items-center justify-center gap-1 text-fl-sm">
+        <div className="flex shrink-0 items-center justify-center gap-1 text-fl-sm">
           <PageBtn disabled={cur === 0} onClick={() => setPage(cur - 1)}><ChevronLeft className="h-[1.1em] w-[1.1em]" /></PageBtn>
           {Array.from({ length: pages }, (_, i) => (
             <PageBtn key={i} active={i === cur} onClick={() => setPage(i)}>{i + 1}</PageBtn>
@@ -240,6 +280,7 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
           <PageBtn disabled={cur === pages - 1} onClick={() => setPage(cur + 1)}><ChevronRight className="h-[1.1em] w-[1.1em]" /></PageBtn>
         </div>
       )}
+      </div>
       </div>
     </div>
   );
