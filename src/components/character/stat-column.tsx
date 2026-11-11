@@ -8,6 +8,7 @@ import { useMounted } from "@/components/common/use-mounted";
 import { classColor, num, type CharacterDetail } from "@/lib/wow";
 import { fmtStat, statPages, type StatDef } from "@/lib/stats-config";
 import { ProfessionSection } from "@/components/character/profession-section";
+import { HoverTip } from "@/components/common/hover-tip";
 
 type Mode = "effective" | "base";
 
@@ -116,13 +117,18 @@ const MODE_HELP = "기본 수치: 장비·버프를 제외한 캐릭터 자체 �
 /** 기본/최종 수치 설명 — hover·키보드 포커스 시 표시 */
 function ModeHelp() {
   return (
-    <span tabIndex={0} aria-label={MODE_HELP} className="group relative inline-flex shrink-0 cursor-help rounded-full outline-none">
+    <HoverTip
+      label={MODE_HELP}
+      className="rounded-full"
+      tip={
+        <span className="block space-y-1">
+          <span className="block"><b className="text-tx1">기본 수치</b> 장비·버프를 제외한 캐릭터 자체 수치</span>
+          <span className="block"><b className="text-tx1">최종 수치</b> 기본 수치에 장비·마법부여·버프를 반영한 값 <span className="text-[var(--green)]">(초록 = 늘어난 양)</span></span>
+        </span>
+      }
+    >
       <HelpCircle className="h-3.5 w-3.5 text-tx3 transition-colors group-hover:text-tx group-focus:text-tx" />
-      <span role="tooltip" className="pointer-events-none absolute right-0 top-full z-20 mt-1.5 hidden w-[230px] space-y-1 break-keep rounded-[5px] border border-line bg-bg3 px-2.5 py-2 text-fl-xs font-medium normal-case leading-snug tracking-normal text-tx2 shadow-lg group-hover:block group-focus:block">
-        <span className="block"><b className="text-tx1">기본 수치</b> 장비·버프를 제외한 캐릭터 자체 수치</span>
-        <span className="block"><b className="text-tx1">최종 수치</b> 기본 수치에 장비·마법부여·버프를 반영한 값 <span className="text-[var(--green)]">(초록 = 늘어난 양)</span></span>
-      </span>
-    </span>
+    </HoverTip>
   );
 }
 
@@ -292,13 +298,14 @@ function PanelHd({ debuffed = false }: { debuffed?: boolean }) {
     <div className="flex h-10 items-center justify-between gap-2 border-b border-line px-4 text-fl-sm font-bold text-tx1">
       능력치
       {debuffed && (
-        <span tabIndex={0} aria-label={`부활 후유증 및 디버프. ${DEBUFF_HELP}`} className="group relative inline-flex shrink-0 cursor-help items-center gap-1 rounded-full border border-red-400/40 bg-red-500/10 px-2 py-[3px] text-fl-2xs font-bold text-[var(--red)] outline-none">
+        <HoverTip
+          label={`부활 후유증 및 디버프. ${DEBUFF_HELP}`}
+          tip={DEBUFF_HELP}
+          className="items-center gap-1 rounded-full border border-red-400/40 bg-red-500/10 px-2 py-[3px] text-fl-2xs font-bold text-[var(--red)]"
+        >
           <TriangleAlert className="h-3 w-3" />
           부활 후유증 및 디버프
-          <span role="tooltip" className="pointer-events-none absolute right-0 top-full z-20 mt-1.5 hidden w-[230px] break-keep rounded-[5px] border border-line bg-bg3 px-2.5 py-2 text-fl-xs font-medium leading-snug text-tx2 shadow-lg group-hover:block group-focus:block">
-            {DEBUFF_HELP}
-          </span>
-        </span>
+        </HoverTip>
       )}
     </div>
   );

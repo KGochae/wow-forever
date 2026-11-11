@@ -2,6 +2,7 @@
 
 import { HelpCircle } from "lucide-react";
 import { useItemTooltip } from "@/components/common/item-tooltip";
+import { HoverTip } from "@/components/common/hover-tip";
 import { ModelViewer } from "@/components/character/model-viewer";
 import { classColor, iconUrl, num, type CharacterDetail, type EquipItem } from "@/lib/wow";
 
@@ -73,12 +74,9 @@ function Card({ label, value, help }: { label: string; value: React.ReactNode; h
       <div className="mb-[2px] flex items-center gap-1 text-[12px] font-bold tracking-[1px] text-tx2">
         {label}
         {help && (
-          <span tabIndex={0} aria-label={help} className="group relative inline-flex cursor-help rounded-full outline-none">
+          <HoverTip label={help} tip={help} className="rounded-full">
             <HelpCircle className="h-3 w-3 text-tx3 transition-colors group-hover:text-tx group-focus:text-tx" />
-            <span role="tooltip" className="pointer-events-none absolute left-0 top-full z-20 mt-1.5 hidden whitespace-nowrap rounded-[5px] border border-line bg-bg3 px-2 py-1.5 text-fl-xs font-medium tracking-normal text-tx shadow-lg group-hover:block group-focus:block">
-              {help}
-            </span>
-          </span>
+          </HoverTip>
         )}
       </div>
       <div className="text-[20px] font-extrabold tracking-[-.5px] text-tx">{value}</div>
