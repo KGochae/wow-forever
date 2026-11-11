@@ -17,7 +17,7 @@ import { TalentColumn } from "@/components/character/talent-column";
 import { ItemTooltipProvider } from "@/components/common/item-tooltip";
 
 /**
- * 뷰어 (/viewer?c={slug})
+ * 뷰어 (/viewer?id={캐릭터id})
  * - 사이드바: index.json (길드원 전체, 경량)
  * - 본문: 선택된 1명만 chars/{id}.json 로드
  */
@@ -44,13 +44,17 @@ export function GuildViewer() {
     [index]
   );
 
-  // 선택 = URL ?c=slug (없으면 선택 안 함 — 기본 캐릭터 없음)
+  // 선택 = URL ?id=캐릭터id (이름이 바뀌어도 링크 유지) · 예전 링크 ?c=slug 도 열림 → id 주소로 바꿈
+  const idParam = Number(params.get("id")) || null;
   const slug = params.get("c");
-  const member = slug ? members.find((m) => m.slug === slug) : undefined;
+  const member = idParam ? members.find((m) => m.id === idParam) : slug ? members.find((m) => m.slug === slug) : undefined;
   const select = (m: Member) => {
     setDrawer(false);
-    router.replace(`/viewer?c=${encodeURIComponent(m.slug)}`, { scroll: false });
+    router.replace(`/viewer?id=${m.id}`, { scroll: false });
   };
+  useEffect(() => {
+    if (!idParam && slug && member) router.replace(`/viewer?id=${member.id}`, { scroll: false });
+  }, [idParam, slug, member?.id]); // eslint-disable-line react-hooks/exhaustive-deps
   const { data: detail, loading: charLoading } = useCharacter(member?.id, member?.has ?? false);
 
   // 선택된 캐릭터가 목록 필터에 가려지면 필터 해제
@@ -82,7 +86,7 @@ export function GuildViewer() {
 
   const onTab = (k: string) => {
     if (k === "stats") return router.push("/stats");
-    const q = new URLSearchParams(params); // 선택한 캐릭터(c)는 유지
+    const q = new URLSearchParams(params); // 선택한 캐릭터(id)는 유지
     if (k === "raid") q.set("tab", "raid");
     else q.delete("tab");
     const s = q.toString();
@@ -187,7 +191,7 @@ export function GuildViewer() {
               </div>
             ) : (
               <Center>
-                {slug ? "해당 길드원을 찾을 수 없습니다" : <><span className="hidden lg:inline">왼쪽 목록이나 상단 검색에서 길드원을 선택하세요</span><span className="lg:hidden">길드원 목록이나 상단 검색에서 길드원을 선택하세요</span></>}
+                {idParam || slug ? "해당 길드원을 찾을 수 없습니다" : <><span className="hidden lg:inline">왼쪽 목록이나 상단 검색에서 길드원을 선택하세요</span><span className="lg:hidden">길드원 목록이나 상단 검색에서 길드원을 선택하세요</span></>}
                 <button onClick={() => setDrawer(true)} className="mt-3 rounded-md border border-white/15 bg-white/[.06] px-4 py-2 text-fl-sm font-bold text-tx1 transition-colors hover:bg-white/[.12] lg:hidden">
                   길드원 목록 열기
                 </button>

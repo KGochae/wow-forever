@@ -14,7 +14,7 @@ const fmtLeft = (s: number) => (s >= 60 ? `${Math.floor(s / 60)}분 ${s % 60}초
  * Update 버튼 — Worker /forever/refresh 로 Blizzard 실시간 조회
  * 캐릭터당 10분 쿨다운(서버), 블리자드 API는 로그아웃 후 반영
  */
-export function UpdateButton({ slug }: { slug: string }) {
+export function UpdateButton({ id, slug }: { id: number; slug: string }) {
   const [st, setSt] = useState<State>({ k: "idle" });
   const [, tick] = useState(0);
 
@@ -36,7 +36,7 @@ export function UpdateButton({ slug }: { slug: string }) {
   const run = async () => {
     if (!CAN_REFRESH || st.k === "loading" || st.k === "cooldown") return;
     setSt({ k: "loading" });
-    const r = await refreshCharacter(slug);
+    const r = await refreshCharacter(id, slug);
     if (r.ok) setSt({ k: "done" });
     else if (r.reason === "cooldown") setSt({ k: "cooldown", until: Date.now() + r.retryAfter * 1000 });
     else setSt({ k: "error", msg: r.message });

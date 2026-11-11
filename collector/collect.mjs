@@ -53,7 +53,8 @@ log(`1. 길드원 ${members.length}명`);
 const profiles = new Map();
 await Promise.all(members.map(async (m) => {
   const r = await bnet.get(`/profile/wow/character/${m.slug}`, NS.profile(bnet.region));
-  if (r.status === 200) profiles.set(m.id, r.data);
+  // 저장은 전부 캐릭터 id 기준. 이름(slug)은 조회 주소용 — 응답 id가 명단 id와 다르면(이름 변경·재사용 직후) 버림
+  if (r.status === 200 && r.data?.id === m.id) profiles.set(m.id, r.data);
 }));
 const changed = members.filter((m) => {
   const p = profiles.get(m.id);

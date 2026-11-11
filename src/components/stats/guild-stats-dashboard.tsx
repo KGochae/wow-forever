@@ -63,7 +63,7 @@ export function GuildStatsDashboard() {
     setCls((p) => (p === id ? null : id));
     setSpec("all");
   };
-  const pick = (m: Member) => router.push(`/viewer?c=${encodeURIComponent(m.slug)}`);
+  const pick = (m: Member) => router.push(`/viewer?id=${m.id}`);
   const onTab = (k: string) => k !== "stats" && router.push(k === "raid" ? "/viewer?tab=raid" : "/viewer");
 
   return (

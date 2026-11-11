@@ -75,7 +75,7 @@ export function CharacterHeader({ name, surname, level, classId, specName, avata
         </div>
       </div>
 
-      <UpdateButton key={slug} slug={slug} />
+      <UpdateButton key={seed} id={seed} slug={slug} />
     </div>
   );
 }

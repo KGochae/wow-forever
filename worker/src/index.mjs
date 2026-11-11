@@ -1,7 +1,7 @@
 // wow-forever Worker — WEB_PROJECT(wow-proxy)와 분리된 WOW_FOREVER 전용
 //
 //   GET  /forever/data/{key}        R2(DATA) 데이터 제공 — index.json · rank.json · chars/{id}.json · talents/{cls}.json (state/ 차단)
-//   POST /forever/refresh?c={slug}  Update 버튼 — Blizzard 실시간 조회 → R2 갱신 → 새 캐릭터 JSON 반환
+//   POST /forever/refresh?id={캐릭터id}  Update 버튼 (id 기준 · 예전 ?c={slug}도 허용) — Blizzard 실시간 조회 → R2 갱신 → 새 캐릭터 JSON 반환
 //   GET  /mv/{env}/...              3D 모델 프록시 — R2(MODEL_CACHE) → 엣지 캐시 → zamimg (WEB_PROJECT와 같은 키 규칙)
 //   GET|PUT /forever/ingest/{key}   수집기 전용 (Authorization: Bearer INGEST_TOKEN) — R2 API 키 없이 Worker 바인딩으로 읽기·쓰기
 //   Cron Trigger (wrangler.toml)    GitHub Actions 수집 워크플로를 workflow_dispatch로 실행
@@ -75,14 +75,17 @@ async function resolveItemsLight(ids, items, bnet, max = 8) {
 }
 
 async function handleRefresh(request, env, url, h) {
-  const slug = (url.searchParams.get("c") ?? "").trim();
-  if (!slug) return json({ error: "c(slug) 필요" }, 400, h);
+  // 캐릭터 id 기준 (이름은 바뀔 수 있음) — 블리자드 조회 주소에 필요한 이름(slug)은 index(매시간 길드 명단)의 최신값 사용
+  const id = Number(url.searchParams.get("id"));
+  const legacySlug = (url.searchParams.get("c") ?? "").trim();
+  if (!id && !legacySlug) return json({ error: "id 필요" }, 400, h);
 
   // 길드원만 허용
   const index = await (await env.DATA.get("index.json"))?.json();
-  const mi = index?.members.findIndex((m) => m.slug === slug) ?? -1;
+  const mi = index?.members.findIndex((m) => (id ? m.id === id : m.slug === legacySlug)) ?? -1;
   if (mi < 0) return json({ error: "길드원이 아닙니다" }, 404, h);
   const member = index.members[mi];
+  const slug = member.slug;
 
   // 남용 방지: 캐릭터당 쿨다운, IP당 시간당 횟수
   const cooldown = +(env.REFRESH_COOLDOWN_SEC ?? 600);
@@ -96,7 +99,9 @@ async function handleRefresh(request, env, url, h) {
   // Blizzard 조회 (프로필 + 5종 = 7요청 + 토큰)
   const bnet = createBnet({ clientId: env.BLIZZARD_CLIENT_ID, clientSecret: env.BLIZZARD_CLIENT_SECRET, region: env.REGION ?? "kr", concurrency: 6 });
   const { status, raw } = await fetchCharacterRaw(bnet, slug);
-  if (status !== 200) return json({ error: "blizzard", status, hint: "로그아웃 후 반영 / 10레벨 이상" }, status === 404 ? 404 : 502, h);
+  if (status !== 200) return json({ error: "blizzard", status, hint: "로그아웃 후 반영 / 10레벨 이상 / 이름이 바뀌었으면 다음 정기 수집 후" }, status === 404 ? 404 : 502, h);
+  // 같은 이름을 다른 캐릭터가 쓰게 된 경우 (이름 변경 직후) — 다른 캐릭터 데이터로 덮어쓰지 않음
+  if (raw.profile?.id !== member.id) return json({ error: "renamed", status: 409, hint: "이름이 바뀐 캐릭터 — 다음 정기 수집 후 다시 시도" }, 409, h);
 
   const items = (await (await env.DATA.get("state/items.json"))?.json()) ?? {};
   const added = await resolveItemsLight(equippedItemIds(raw.equipment), items, bnet);

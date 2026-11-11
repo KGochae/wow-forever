@@ -57,12 +57,14 @@ export type RefreshResult =
   | { ok: false; reason: "error"; message: string };
 
 /** Update 버튼: Worker가 Blizzard 실시간 조회 → R2 갱신 → 새 데이터 반환 */
-export async function refreshCharacter(slug: string): Promise<RefreshResult> {
+export async function refreshCharacter(id: number, slug: string): Promise<RefreshResult> {
   try {
-    const r = await fetch(`${API_BASE}/forever/refresh?c=${encodeURIComponent(slug)}`, { method: "POST" });
+    // id 기준 (c=slug는 예전 Worker 호환용)
+    const r = await fetch(`${API_BASE}/forever/refresh?id=${id}&c=${encodeURIComponent(slug)}`, { method: "POST" });
     const j = await r.json().catch(() => ({}));
     if (r.status === 429 && j.error === "cooldown") return { ok: false, reason: "cooldown", retryAfter: j.retryAfter ?? 600 };
     if (r.status === 429) return { ok: false, reason: "error", message: "요청이 너무 많습니다. 잠시 후 다시 시도하세요" };
+    if (r.status === 409) return { ok: false, reason: "error", message: "이름이 바뀐 캐릭터입니다 (다음 정기 수집 후 반영)" };
     if (!r.ok || !j.ok) return { ok: false, reason: "error", message: j.status === 404 || r.status === 404 ? "블리자드에서 조회되지 않습니다 (로그아웃 후 반영)" : "갱신 실패" };
     const c = j.character as CharacterDetail;
     charCache.set(c.id, Promise.resolve(c));

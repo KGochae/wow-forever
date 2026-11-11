@@ -17,7 +17,7 @@ const NAV = [
 export function Landing() {
   const router = useRouter();
   const { index, error } = useGuildIndex();
-  const go = (m: Member) => router.push(`/viewer?c=${encodeURIComponent(m.slug)}`);
+  const go = (m: Member) => router.push(`/viewer?id=${m.id}`);
 
   return (
     <div className="relative flex h-dvh items-center justify-center overflow-hidden anim-fade">
