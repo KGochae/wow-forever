@@ -120,7 +120,14 @@ export function GearColumn({ c }: { c?: CharacterDetail }) {
         <div className="flex flex-col gap-[9px]">
           {LEFT.map((k, i) => <Slot key={k} item={bySlot.get(k)} delay={i * 25} />)}
         </div>
-        <ModelViewer c={c} />
+        {c ? (
+          <ModelViewer c={c} />
+        ) : (
+          /* 데이터 없는 유저: 모델 자리에 안내 (크기는 ModelViewer와 동일) */
+          <div className="flex h-[calc(var(--slot)*8+63px)] w-[calc((var(--slot)*3+6rem)*1.5)] min-w-0 shrink items-center justify-center rounded-[5px] border border-dashed border-line text-fl-sm text-tx3">
+            데이터 수집 불가
+          </div>
+        )}
         <div className="flex flex-col gap-[9px]">
           {RIGHT.map((k, i) => <Slot key={k} item={bySlot.get(k)} delay={i * 25 + 12} />)}
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { RANK_COLOR } from "@/lib/wow";
 
 export interface Filters {
   rank: number | "all";
@@ -55,7 +56,8 @@ export function FilterRail({ ranks, classes, rankLabel, specs, hasUnknown, value
       <Group title="길드">
         <Cat active={value.rank === "all"} onClick={() => onChange({ ...value, rank: "all" })}>전체</Cat>
         {ranks.map((r) => (
-          <Cat key={r} active={value.rank === r} onClick={() => onChange({ ...value, rank: r })}>
+          /* 레거시 등급(L70·L60): 직업 버튼처럼 선택했을 때만 색 */
+          <Cat key={r} color={RANK_COLOR[r]} active={value.rank === r} onClick={() => onChange({ ...value, rank: r })}>
             {rankLabel(r)}
           </Cat>
         ))}

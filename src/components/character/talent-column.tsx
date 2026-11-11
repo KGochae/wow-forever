@@ -176,7 +176,7 @@ export function TalentColumn({ c }: { c?: CharacterDetail }) {
         {tab === "secondary" ? (
           <Placeholder text="보조 특성 정보 없음 (API에 비활성 그룹 미제공)" />
         ) : !c ? (
-          <Placeholder text="캐릭터 데이터 수집 전" />
+          <Placeholder text="데이터 수집 불가" />
         ) : !classTrees ? (
           <div className="flex h-24 items-center justify-center"><div className="spin" /></div>
         ) : (

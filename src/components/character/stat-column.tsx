@@ -261,7 +261,8 @@ export function StatColumn({ c }: { c?: CharacterDetail }) {
         </div>
       </section>
 
-      {!caster && (
+      {/* 무기: 모든 직업 표시 (주문 직업도 주무기·보조무기 DPS 값이 있음) */}
+      {(
         <section className="border-b border-line px-3 py-3.5">
           <SectionTitle>Weapon</SectionTitle>
           <div className="grid grid-cols-2 gap-[5px]">
@@ -311,7 +312,7 @@ function PanelHd({ debuffed = false }: { debuffed?: boolean }) {
   );
 }
 
-export function Empty({ text = "캐릭터 데이터 없음 (API 미조회)" }: { text?: string }) {
+export function Empty({ text = "데이터 수집 불가" }: { text?: string }) {
   return (
     <div className="flex h-24 flex-col items-center justify-center gap-2 rounded-md border border-dashed border-line2 text-fl-xs text-tx3">
       {text}

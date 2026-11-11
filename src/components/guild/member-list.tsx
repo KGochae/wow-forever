@@ -50,7 +50,7 @@ export function MemberList({ members, selectedId, avatars, missing, specs, onSel
               <span className="truncate font-bold text-tx1">{m.name} {m.surname}</span>
               <span className="truncate text-[.76em] text-tx3">
                 {none ? (
-                  <span className="text-tx3">데이터 없음</span>
+                  <span className="text-tx3">데이터 수집 불가</span>
                 ) : (
                   <>
                     <span className={specs?.get(m.id) ? "font-semibold text-tx2" : "text-tx3"}>{specs?.get(m.id) ?? "알 수 없음"}</span>

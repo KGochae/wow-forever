@@ -25,7 +25,11 @@ export const RACE_NAME: Record<number, string> = {
 };
 
 // 길드 등급 이름은 API에 없음 → 숫자 등급 표시 (추후 매핑)
-export const RANK_LABEL = (rank: number) => (rank === 0 ? "길드장" : `등급 ${rank}`);
+/** 길드 등급 이름 (블리자드 API는 등급 번호만 줌 → 여기서 이름 지정, 없으면 "등급 N") */
+export const RANK_NAMES: Record<number, string> = { 0: "길드장", 1: "스텝", 2: "L70", 3: "L60" };
+export const RANK_LABEL = (rank: number) => RANK_NAMES[rank] ?? `등급 ${rank}`;
+/** 등급 선택 시 색 (레거시 등급만 · 없으면 기본 흰색 선택 표시) */
+export const RANK_COLOR: Record<number, string> = { 2: "#9be06a", 3: "#e0b85c" };
 
 export const QUALITY_COLOR: Record<string, string> = {
   POOR: "#9d9d9d", COMMON: "#ffffff", UNCOMMON: "#1eff00",
