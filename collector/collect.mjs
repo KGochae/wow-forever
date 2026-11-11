@@ -11,12 +11,12 @@
 //   state/meta.json       { staticVersion, lastRun, chars: { [id]: lastLogin } }
 //   state/items.json      아이템 아이콘·displayId 영구 캐시
 //
-// 증분 수집: roster + 프로필(1요청/인) → last_login_timestamp 가 바뀐 캐릭터만 하위 5종 재조회
+// 증분 수집: roster + 프로필(1요청/인) → last_login_timestamp 가 바뀐 캐릭터만 하위 7종 재조회
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createBnet, NS } from "./lib/bnet.mjs";
-import { buildCharacter, equippedItemIds, indexEntry, staticVersion, SUB_ENDPOINTS, withStreamer } from "./lib/transform.mjs";
+import { buildCharacter, equippedItemIds, indexEntry, rawFromSubs, staticVersion, SUB_ENDPOINTS, withStreamer } from "./lib/transform.mjs";
 import { resolveItems } from "./lib/items.mjs";
 import { buildAllTalents } from "./lib/talents.mjs";
 import { CACHE, createStorage } from "./lib/storage.mjs";
@@ -61,13 +61,12 @@ const changed = members.filter((m) => {
 });
 log(`2. 프로필 ${profiles.size}/${members.length} · 변경 ${changed.length}명`);
 
-// ── 3. 변경된 캐릭터만 하위 5종 ──
+// ── 3. 변경된 캐릭터만 하위 7종 (장비·능력치·특성·이미지·외형·전문기술·완료 퀘스트) ──
 const raws = new Map();
 await Promise.all(changed.map(async (m) => {
   const base = `/profile/wow/character/${m.slug}`;
   const subs = await Promise.all(SUB_ENDPOINTS.map((x) => bnet.get(`${base}/${x}`, NS.profile(bnet.region))));
-  const [equipment, statistics, specializations, media, appearance] = subs.map((r) => r.data);
-  raws.set(m.id, { profile: profiles.get(m.id), equipment, statistics, specializations, media, appearance });
+  raws.set(m.id, rawFromSubs(profiles.get(m.id), subs));
 }));
 log(`3. 상세 ${raws.size}명 조회`);
 

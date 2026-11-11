@@ -124,6 +124,24 @@ export interface CharacterDetail {
   rank?: number;
   appearance?: { gender: string; customizations: { option: number; choice: number; order: number }[] } | null;
   equipment: EquipItem[];
+  /** 전문 기술 (수집 전 데이터면 undefined, 조회 실패면 null) */
+  professions?: Profession[] | null;
+  /** 완료한 퀘스트 수 */
+  questsCompleted?: number | null;
+}
+
+export interface Profession {
+  id: number;
+  name: string;
+  icon: string | null;
+  skill: number;
+  max: number;
+  secondary: boolean;
+}
+
+/** 클래식 숙련 단계 (최대 숙련도 기준) */
+export function professionTier(max: number) {
+  return max >= 300 ? "대가" : max >= 225 ? "전문가" : max >= 150 ? "숙련자" : max > 0 ? "수습생" : "";
 }
 
 export function timeAgo(ts: number) {

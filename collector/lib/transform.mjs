@@ -2,7 +2,41 @@
 import { NS } from "./bnet.mjs";
 import { streamerOf } from "./streamers.mjs";
 
-export const SUB_ENDPOINTS = ["equipment", "statistics", "specializations", "character-media", "appearance"];
+export const SUB_ENDPOINTS = ["equipment", "statistics", "specializations", "character-media", "appearance", "professions", "quests/completed"];
+
+/** SUB_ENDPOINTS 순서대로 받은 응답 → buildCharacter 입력 묶음 */
+export function rawFromSubs(profile, subs) {
+  const [equipment, statistics, specializations, media, appearance, professions, questsDone] = subs.map((r) => r.data);
+  return { profile, equipment, statistics, specializations, media, appearance, professions, questsDone };
+}
+
+/**
+ * 전문 기술 — API 이름이 영문으로 와서 한국어 이름·공식 아이콘(static media)을 고정 표로 매핑
+ * (아이콘: /data/wow/media/profession/{id} · static-forever-kr 응답값, 추가 요청 없음)
+ */
+const ICON = (n) => `https://render.worldofwarcraft.com/forever-kr/icons/56/${n}.jpg`;
+export const PROFESSIONS = {
+  164: { name: "대장기술", icon: ICON(136241) }, 165: { name: "가죽세공", icon: ICON(136247) },
+  171: { name: "연금술", icon: ICON(136240) }, 182: { name: "약초채집", icon: ICON(136246) },
+  186: { name: "채광", icon: ICON(136248) }, 197: { name: "재봉술", icon: ICON(136249) },
+  202: { name: "기계공학", icon: ICON(136243) }, 333: { name: "마법부여", icon: ICON(136244) },
+  393: { name: "무두질", icon: ICON(134366) }, 185: { name: "요리", icon: ICON(133971) },
+  129: { name: "응급치료", icon: ICON(135966) }, 356: { name: "낚시", icon: ICON(136245) },
+};
+
+/** professions 응답 → [{ id, name, icon, skill, max, secondary }] (조회 실패면 null) */
+export function parseProfessions(pr) {
+  if (!pr) return null;
+  const one = (x, secondary) => {
+    const id = x.profession?.id;
+    const t = x.tiers?.[0] ?? x; // 클래식: 단일 tier (구버전 형식이면 최상위에 skill_points)
+    return {
+      id, name: PROFESSIONS[id]?.name ?? x.profession?.name ?? "?", icon: PROFESSIONS[id]?.icon ?? null,
+      skill: t.skill_points ?? 0, max: t.max_skill_points ?? 0, secondary,
+    };
+  };
+  return [...(pr.primaries ?? []).map((x) => one(x, false)), ...(pr.secondaries ?? []).map((x) => one(x, true))];
+}
 
 /** statistics 평탄화: value형 → 숫자, base/effective형 → `${k}_base` / `${k}_effective`, power_type → 이름 */
 export function flatStats(s) {
@@ -56,7 +90,7 @@ export function staticVersion(profile) {
 }
 
 /** 캐릭터 1명 원본 응답 묶음 → CharacterDetail */
-export function buildCharacter({ profile: p, equipment: eq, statistics: st, specializations: sp, media: md, appearance: ap }, { rank, items, slug }) {
+export function buildCharacter({ profile: p, equipment: eq, statistics: st, specializations: sp, media: md, appearance: ap, professions: pr, questsDone: qd }, { rank, items, slug }) {
   const act = sp?.specialization_groups?.find((g) => g.is_active);
   return {
     id: p.id, name: p.name, surname: p.surname, slug: slug ?? `${p.name}-${p.surname}`.toLowerCase(), level: p.level, rank,
@@ -74,6 +108,8 @@ export function buildCharacter({ profile: p, equipment: eq, statistics: st, spec
     })),
     stats: st ? flatStats(st) : null,
     equipment: parseEquip(eq, items),
+    professions: parseProfessions(pr),
+    questsCompleted: qd?.quests ? qd.quests.length : null, // 완료한 퀘스트 수 (목록은 용량이 커서 저장 안 함)
     appearance: ap ? {
       gender: ap.gender?.type,
       customizations: (ap.customizations ?? []).map((c) => ({ option: c.option?.id, choice: c.choice?.id, order: c.choice?.display_order })),
@@ -81,17 +117,16 @@ export function buildCharacter({ profile: p, equipment: eq, statistics: st, spec
   };
 }
 
-/** 프로필 + 하위 5종 조회 (Update 버튼·수집기 공용). 프로필 404면 null */
+/** 프로필 + 하위 7종 조회 (Update 버튼·수집기 공용). 프로필 404면 null */
 export async function fetchCharacterRaw(bnet, slug) {
   const ns = NS.profile(bnet.region);
   const base = `/profile/wow/character/${slug}`;
   const prof = await bnet.get(base, ns);
   if (prof.status !== 200) return { status: prof.status, raw: null };
   const subs = await Promise.all(SUB_ENDPOINTS.map((x) => bnet.get(`${base}/${x}`, ns)));
-  const [equipment, statistics, specializations, media, appearance] = subs.map((r) => r.data);
   return {
     status: 200,
-    raw: { profile: prof.data, equipment, statistics, specializations, media, appearance },
+    raw: rawFromSubs(prof.data, subs),
     missing: SUB_ENDPOINTS.filter((_, i) => subs[i].status !== 200),
   };
 }
