@@ -56,17 +56,17 @@ export function UpdateButton({ slug }: { slug: string }) {
         disabled={!CAN_REFRESH || st.k === "loading" || st.k === "cooldown"}
         title={title}
         className={cn(
-          "flex items-center gap-1 rounded-full border px-3 py-1 text-[12px] font-bold transition-colors active:scale-95 disabled:cursor-not-allowed",
+          "flex items-center gap-1 rounded-full border px-3 py-1 text-fl-xs font-bold transition-colors active:scale-95 disabled:cursor-not-allowed",
           st.k === "done" ? "border-[var(--green)]/50 bg-[var(--green)]/10 text-[var(--green)]"
             : st.k === "error" ? "border-[var(--red)]/40 bg-[var(--red)]/10 text-[var(--red)]"
             : "border-line2 bg-bg3 text-tx1 hover:border-white/25 hover:bg-bg4 disabled:opacity-60"
         )}
       >
-        {st.k === "done" ? <Check className="h-3.5 w-3.5" /> : <RotateCw className={cn("h-3.5 w-3.5", st.k === "loading" && "animate-spin")} />}
+        {st.k === "done" ? <Check className="h-[1em] w-[1em]" /> : <RotateCw className={cn("h-[1em] w-[1em]", st.k === "loading" && "animate-spin")} />}
         {label}
       </button>
       {(st.k === "error" || st.k === "cooldown") && (
-        <span className="text-[10.5px] text-tx3">{st.k === "error" ? st.msg : "잠시 후 다시 갱신할 수 있습니다"}</span>
+        <span className="text-fl-2xs text-tx3">{st.k === "error" ? st.msg : "잠시 후 다시 갱신할 수 있습니다"}</span>
       )}
     </div>
   );

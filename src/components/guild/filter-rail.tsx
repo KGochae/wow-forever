@@ -27,7 +27,7 @@ function Cat({ active, children, onClick, color }: { active: boolean; children: 
       onClick={onClick}
       style={tint ? { color, borderColor: color, backgroundColor: `${color}24` } : undefined}
       className={cn(
-        "w-full break-keep rounded border px-1.5 py-[5px] text-center text-[11px] font-bold tracking-[.3px] transition-colors duration-100",
+        "w-full break-keep rounded border px-[.5em] py-[.4em] text-center font-bold tracking-[.3px] transition-colors duration-100",
         tint
           ? ""
           : active
@@ -43,7 +43,7 @@ function Cat({ active, children, onClick, color }: { active: boolean; children: 
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1 rounded-lg bg-white/[.03] p-1.5">
-      <div className="px-0.5 pb-0.5 text-[10px] font-extrabold uppercase tracking-[1.2px] text-tx2">{title}</div>
+      <div className="px-0.5 pb-0.5 text-[.9em] font-extrabold uppercase tracking-[1.2px] text-tx2">{title}</div>
       {children}
     </div>
   );
@@ -51,7 +51,7 @@ function Group({ title, children }: { title: string; children: React.ReactNode }
 
 export function FilterRail({ ranks, classes, rankLabel, specs, hasUnknown, value, onChange }: Props) {
   return (
-    <div className="no-scrollbar flex w-[88px] shrink-0 flex-col gap-1.5 overflow-y-auto border-r border-line px-1.5 py-2">
+    <div className="no-scrollbar flex w-[7em] shrink-0 flex-col text-fl-2xs gap-1.5 overflow-y-auto border-r border-line px-1.5 py-2">
       <Group title="길드">
         <Cat active={value.rank === "all"} onClick={() => onChange({ ...value, rank: "all" })}>전체</Cat>
         {ranks.map((r) => (

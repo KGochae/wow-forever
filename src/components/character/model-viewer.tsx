@@ -145,7 +145,7 @@ export function ModelViewer({ c }: { c?: CharacterDetail }) {
   return (
     <div
       ref={wrap}
-      className="relative h-[440px] min-w-0 flex-1 overflow-hidden rounded bg-cover bg-center shadow-[0_2px_12px_rgba(0,0,0,.5)] transition-[background-image] duration-500"
+      className="relative h-[clamp(340px,30vw,580px)] min-w-0 flex-1 overflow-hidden rounded bg-cover bg-center shadow-[0_2px_12px_rgba(0,0,0,.5)] transition-[background-image] duration-500"
       style={bg ? { backgroundImage: `linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.72)), url('${bg}')` } : undefined}
     >
       <div id={hostId} className={cn("absolute inset-0", show2d && "invisible")} />
@@ -156,14 +156,14 @@ export function ModelViewer({ c }: { c?: CharacterDetail }) {
       {mode === "3d" && state === "loading" && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[rgba(8,6,2,.55)] transition-opacity">
           <div className="spin" />
-          <div className="text-[13px] font-medium tracking-[1px] text-tx3">소환 중...</div>
+          <div className="text-fl-xs font-medium tracking-[1px] text-tx3">소환 중...</div>
         </div>
       )}
       {mode === "3d" && state === "fail" && (
-        <div className="absolute inset-x-0 bottom-9 text-center text-[11px] text-[var(--red)]">3D 실패 · {err} — 2D 렌더 표시</div>
+        <div className="absolute inset-x-0 bottom-9 text-center text-fl-2xs text-[var(--red)]">3D 실패 · {err} — 2D 렌더 표시</div>
       )}
 
-      <div className="absolute right-2 top-2 flex overflow-hidden rounded-md border border-line2 bg-black/50 text-[11px] font-bold backdrop-blur">
+      <div className="absolute right-2 top-2 flex overflow-hidden rounded-md border border-line2 bg-black/50 text-fl-2xs font-bold backdrop-blur">
         {(["2d", "3d"] as const).map((m) => (
           <button
             key={m}

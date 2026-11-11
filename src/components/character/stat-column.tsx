@@ -14,7 +14,7 @@ type Mode = "effective" | "base";
 function SectionTitle({ children, right }: { children: React.ReactNode; right?: React.ReactNode }) {
   return (
     <div className="mb-2.5 flex items-center justify-between gap-2">
-      <span className="truncate text-[12px] font-extrabold uppercase tracking-[1.5px] text-tx1">{children}</span>
+      <span className="truncate text-fl-xs font-extrabold uppercase tracking-[1.5px] text-tx1">{children}</span>
       {right}
     </div>
   );
@@ -24,9 +24,9 @@ function SectionTitle({ children, right }: { children: React.ReactNode; right?: 
 function Card({ label, value, sub, delay = 0 }: { label: string; value: string; sub?: React.ReactNode; delay?: number }) {
   return (
     <div className="anim-count rounded-[5px] border border-line bg-bg3 px-2.5 py-2" style={{ animationDelay: `${delay}ms` }}>
-      <div className="mb-0.5 truncate text-[12px] font-bold tracking-[1px] text-tx2">{label}</div>
-      <div className="text-[20px] font-extrabold tracking-[-.5px] text-tx">{value}</div>
-      {sub && <div className="mt-0.5 text-[12px] text-tx3">{sub}</div>}
+      <div className="mb-0.5 truncate text-fl-xs font-bold tracking-[1px] text-tx2">{label}</div>
+      <div className="text-fl-lg font-extrabold tracking-[-.5px] text-tx">{value}</div>
+      {sub && <div className="mt-0.5 text-fl-xs text-tx3">{sub}</div>}
     </div>
   );
 }
@@ -63,7 +63,7 @@ function StatRow({ def, c, mode, color, max, on }: { def: StatDef; c: CharacterD
   const bonusW = mode === "effective" && split && diff > 0 ? w(eff) - w(base) : 0;
 
   const tip = (
-    <div className="space-y-1 text-[13px]">
+    <div className="space-y-1 text-fl-xs">
       <div className="font-bold text-tx">{def.l}</div>
       <TipRow label="기본 수치" value={fmtStat(base, def.f)} />
       <TipRow label="장비·버프" value={`+${fmtStat(diff, def.f)}`} color="var(--green)" />
@@ -73,7 +73,7 @@ function StatRow({ def, c, mode, color, max, on }: { def: StatDef; c: CharacterD
 
   return (
     <div className="mb-[9px] flex items-center gap-2 last:mb-0">
-      <span className="w-[86px] shrink-0 truncate text-[13px] font-bold text-tx2">{def.l}</span>
+      <span className="w-[6.6em] shrink-0 truncate text-fl-xs font-bold text-tx2">{def.l}</span>
       <div data-stat-bar={def.k} className="relative -my-1.5 flex min-w-0 flex-1 items-center py-1.5">
         {/* 늘어난 구간(초록)만 hover — 막대가 8px로 얇아 투명 영역으로 위아래를 넓힘 */}
         {bonusW > 0 && (
@@ -94,7 +94,7 @@ function StatRow({ def, c, mode, color, max, on }: { def: StatDef; c: CharacterD
           />
         </div>
       </div>
-      <span className="w-[58px] shrink-0 text-right text-[15px] font-bold tabular-nums" style={{ color: v ? "var(--text)" : "var(--text3)" }}>
+      <span className="w-[4.2em] shrink-0 text-right text-fl-sm font-bold tabular-nums" style={{ color: v ? "var(--text)" : "var(--text3)" }}>
         {fmtStat(v, def.f)}
       </span>
     </div>
@@ -117,7 +117,7 @@ function ModeHelp() {
   return (
     <span tabIndex={0} aria-label={MODE_HELP} className="group relative inline-flex shrink-0 cursor-help rounded-full outline-none">
       <HelpCircle className="h-3.5 w-3.5 text-tx3 transition-colors group-hover:text-tx group-focus:text-tx" />
-      <span role="tooltip" className="pointer-events-none absolute right-0 top-full z-20 mt-1.5 hidden w-[230px] space-y-1 break-keep rounded-[5px] border border-line bg-bg3 px-2.5 py-2 text-[12px] font-medium normal-case leading-snug tracking-normal text-tx2 shadow-lg group-hover:block group-focus:block">
+      <span role="tooltip" className="pointer-events-none absolute right-0 top-full z-20 mt-1.5 hidden w-[230px] space-y-1 break-keep rounded-[5px] border border-line bg-bg3 px-2.5 py-2 text-fl-xs font-medium normal-case leading-snug tracking-normal text-tx2 shadow-lg group-hover:block group-focus:block">
         <span className="block"><b className="text-tx1">기본 수치</b> 장비·버프를 제외한 캐릭터 자체 수치</span>
         <span className="block"><b className="text-tx1">최종 수치</b> 기본 수치에 장비·마법부여·버프를 반영한 값 <span className="text-[var(--green)]">(초록 = 늘어난 양)</span></span>
       </span>
@@ -128,7 +128,7 @@ function ModeHelp() {
 /** ❯ 기본 수치 | 최종 수치 */
 function ModeToggle({ mode, onChange }: { mode: Mode; onChange: (m: Mode) => void }) {
   return (
-    <div className="flex shrink-0 items-center rounded-md border border-line2 bg-bg3 p-0.5 text-[11px] font-bold">
+    <div className="flex shrink-0 items-center rounded-md border border-line2 bg-bg3 p-0.5 text-fl-2xs font-bold">
       {(["base", "effective"] as const).map((m) => (
         <button
           key={m}
@@ -178,7 +178,7 @@ function StatPager({ c }: { c: CharacterDetail }) {
             key={p.key}
             onClick={() => setIdx(i)}
             className={cn(
-              "shrink-0 rounded-full border px-2 py-[2px] text-[10.5px] font-bold transition-colors",
+              "shrink-0 rounded-full border px-2 py-[2px] text-fl-2xs font-bold transition-colors",
               i === idx ? "text-[#0a0b12]" : "border-line2 text-tx3 hover:text-tx2"
             )}
             style={i === idx ? { background: col, borderColor: col } : undefined}
@@ -264,12 +264,12 @@ export function StatColumn({ c }: { c?: CharacterDetail }) {
               const dps = num(s, `${k}_dps`), mn = num(s, `${k}_damage_min`), mx = num(s, `${k}_damage_max`), sp = num(s, `${k}_speed`);
               return (
                 <div key={k} className="anim-count rounded-[5px] border border-line bg-bg3 px-2.5 py-2" style={{ animationDelay: `${i * 50}ms` }}>
-                  <div className="text-[11px] font-bold uppercase tracking-[1px] text-tx3">{k === "main_hand" ? "Main Hand" : "Off Hand"}</div>
+                  <div className="text-fl-2xs font-bold uppercase tracking-[1px] text-tx3">{k === "main_hand" ? "Main Hand" : "Off Hand"}</div>
                   <div className="flex items-baseline justify-between">
-                    <span className="text-[24px] font-extrabold tracking-[-.5px] text-[#ffa53a]">{dps ? dps.toFixed(1) : "—"}</span>
-                    <span className="text-[11px] font-bold text-tx3">DPS</span>
+                    <span className="text-fl-xl font-extrabold tracking-[-.5px] text-[#ffa53a]">{dps ? dps.toFixed(1) : "—"}</span>
+                    <span className="text-fl-2xs font-bold text-tx3">DPS</span>
                   </div>
-                  <div className="text-[12px] text-tx3">{dps ? `${Math.round(mn ?? 0)}~${Math.round(mx ?? 0)} · ${sp}s` : "미착용"}</div>
+                  <div className="text-fl-xs text-tx3">{dps ? `${Math.round(mn ?? 0)}~${Math.round(mx ?? 0)} · ${sp}s` : "미착용"}</div>
                 </div>
               );
             })}
@@ -287,13 +287,13 @@ const DEBUFF_HELP = "로그아웃할 때 부활 후유증이나 디버프가 걸
 
 function PanelHd({ debuffed = false }: { debuffed?: boolean }) {
   return (
-    <div className="flex h-10 items-center justify-between gap-2 border-b border-line px-4 text-[13px] font-extrabold text-tx1">
+    <div className="flex h-10 items-center justify-between gap-2 border-b border-line px-4 text-fl-xs font-extrabold text-tx1">
       능력치
       {debuffed && (
-        <span tabIndex={0} aria-label={`부활 후유증 및 디버프. ${DEBUFF_HELP}`} className="group relative inline-flex shrink-0 cursor-help items-center gap-1 rounded-full border border-red-400/40 bg-red-500/10 px-2 py-[3px] text-[11px] font-bold text-[var(--red)] outline-none">
+        <span tabIndex={0} aria-label={`부활 후유증 및 디버프. ${DEBUFF_HELP}`} className="group relative inline-flex shrink-0 cursor-help items-center gap-1 rounded-full border border-red-400/40 bg-red-500/10 px-2 py-[3px] text-fl-2xs font-bold text-[var(--red)] outline-none">
           <TriangleAlert className="h-3 w-3" />
           부활 후유증 및 디버프
-          <span role="tooltip" className="pointer-events-none absolute right-0 top-full z-20 mt-1.5 hidden w-[230px] break-keep rounded-[5px] border border-line bg-bg3 px-2.5 py-2 text-[12px] font-medium leading-snug text-tx2 shadow-lg group-hover:block group-focus:block">
+          <span role="tooltip" className="pointer-events-none absolute right-0 top-full z-20 mt-1.5 hidden w-[230px] break-keep rounded-[5px] border border-line bg-bg3 px-2.5 py-2 text-fl-xs font-medium leading-snug text-tx2 shadow-lg group-hover:block group-focus:block">
             {DEBUFF_HELP}
           </span>
         </span>
@@ -304,7 +304,7 @@ function PanelHd({ debuffed = false }: { debuffed?: boolean }) {
 
 export function Empty({ text = "캐릭터 데이터 없음 (API 미조회)" }: { text?: string }) {
   return (
-    <div className="flex h-24 flex-col items-center justify-center gap-2 rounded-md border border-dashed border-line2 text-[12px] text-tx3">
+    <div className="flex h-24 flex-col items-center justify-center gap-2 rounded-md border border-dashed border-line2 text-fl-xs text-tx3">
       {text}
     </div>
   );

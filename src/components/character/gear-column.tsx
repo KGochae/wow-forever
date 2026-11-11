@@ -70,18 +70,18 @@ function Radar({ values, color }: { values: { label: string; v: number }[]; colo
 function Card({ label, value, help }: { label: string; value: React.ReactNode; help?: string }) {
   return (
     <div className="anim-count relative flex flex-1 flex-col justify-center rounded-[5px] border border-line bg-bg3 px-2.5 py-2">
-      <div className="mb-0.5 flex items-center gap-1 text-[12px] font-bold tracking-[1px] text-tx2">
+      <div className="mb-0.5 flex items-center gap-1 text-fl-xs font-bold tracking-[1px] text-tx2">
         {label}
         {help && (
           <span tabIndex={0} aria-label={help} className="group relative inline-flex cursor-help rounded-full outline-none">
             <HelpCircle className="h-3 w-3 text-tx3 transition-colors group-hover:text-tx group-focus:text-tx" />
-            <span role="tooltip" className="pointer-events-none absolute left-0 top-full z-20 mt-1.5 hidden whitespace-nowrap rounded-[5px] border border-line bg-bg3 px-2 py-1.5 text-[12px] font-medium tracking-normal text-tx shadow-lg group-hover:block group-focus:block">
+            <span role="tooltip" className="pointer-events-none absolute left-0 top-full z-20 mt-1.5 hidden whitespace-nowrap rounded-[5px] border border-line bg-bg3 px-2 py-1.5 text-fl-xs font-medium tracking-normal text-tx shadow-lg group-hover:block group-focus:block">
               {help}
             </span>
           </span>
         )}
       </div>
-      <div className="text-[20px] font-extrabold tracking-[-.5px] text-tx">{value}</div>
+      <div className="text-fl-lg font-extrabold tracking-[-.5px] text-tx">{value}</div>
     </div>
   );
 }
@@ -104,16 +104,16 @@ export function GearColumn({ c }: { c?: CharacterDetail }) {
 
   return (
     <div className="glass-panel no-scrollbar min-w-0 overflow-y-auto px-2.5 pb-4">
-      <div className="-mx-2.5 flex h-10 items-center border-b border-line px-4 text-[13px] font-extrabold text-tx1">캐릭터</div>
+      <div className="-mx-2.5 flex h-10 items-center border-b border-line px-4 text-fl-xs font-extrabold text-tx1">캐릭터</div>
 
-      <div className="mt-3 grid grid-cols-[150px_1fr] gap-[5px]">
+      <div className="mt-3 grid grid-cols-[clamp(130px,10vw,210px)_1fr] gap-[5px]">
         <div className="flex flex-col gap-[5px]">
           <Card label="아이템 평균 레벨" value={c?.avgIlvl ?? "—"} />
           <Card label="기어스코어" value="—" help="Forever 산식 확정 후 측정 예정" />
         </div>
         <div className="rounded-[5px] border border-line bg-bg3 px-2 py-2">
-          <div className="text-[12px] font-bold tracking-[1px] text-tx2">장비 스탯</div>
-          <div key={c?.id} className="h-[132px]"><Radar values={radar} color={col} /></div>
+          <div className="text-fl-xs font-bold tracking-[1px] text-tx2">장비 스탯</div>
+          <div key={c?.id} className="h-[clamp(120px,9vw,190px)]"><Radar values={radar} color={col} /></div>
         </div>
       </div>
 

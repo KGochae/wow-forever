@@ -20,9 +20,9 @@ interface Props {
 export function CharacterHeader({ name, surname, level, classId, specName, avatar, lastLogin, seed, slug, soop }: Props) {
   const cls = CLASS_INFO[classId];
   return (
-    <div className="flex items-center gap-4 border-b border-line px-5 py-4">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-line px-[clamp(12px,1.3vw,26px)] py-[clamp(12px,1.1vw,22px)]">
       <div
-        className="anim-img h-[62px] w-[62px] shrink-0 overflow-hidden rounded-md border-2 shadow-[0_2px_12px_rgba(0,0,0,.5)]"
+        className="anim-img h-[clamp(52px,4.2vw,80px)] w-[clamp(52px,4.2vw,80px)] shrink-0 overflow-hidden rounded-md border-2 shadow-[0_2px_12px_rgba(0,0,0,.5)]"
         style={{ borderColor: cls?.color }}
       >
         {avatar ? (
@@ -37,18 +37,18 @@ export function CharacterHeader({ name, surname, level, classId, specName, avata
 
       <div className="anim-up min-w-0">
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display text-[15px] font-bold text-tx2">LV.{level}</span>
-          <span className="truncate text-[29px] font-extrabold leading-none tracking-[-.5px] text-tx1">{name} {surname}</span>
+          <span className="font-display shrink-0 text-fl-sm font-bold text-tx2">LV.{level}</span>
+          <span className="truncate text-[clamp(22px,1rem+1vw,38px)] font-extrabold leading-none tracking-[-.5px] text-tx1">{name} {surname}</span>
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
           <span
-            className="rounded border px-[9px] py-0.5 text-[12px] font-bold tracking-[.3px]"
+            className="rounded border px-[9px] py-0.5 text-fl-xs font-bold tracking-[.3px]"
             style={{ color: cls?.color, borderColor: `${cls?.color}40`, background: `${cls?.color}14` }}
           >
             {cls?.name}
           </span>
           {specName && (
-            <span className="rounded border border-line2 bg-[rgba(130,130,130,.1)] px-[9px] py-0.5 text-[12px] font-bold tracking-[.3px] text-gold">
+            <span className="rounded border border-line2 bg-[rgba(130,130,130,.1)] px-[9px] py-0.5 text-fl-xs font-bold tracking-[.3px] text-gold">
               {specName}
             </span>
           )}
@@ -60,15 +60,15 @@ export function CharacterHeader({ name, surname, level, classId, specName, avata
               rel="noopener noreferrer"
               title="SOOP 방송국"
               aria-label="SOOP 방송국"
-              className="flex items-center self-stretch rounded border border-transparent bg-[linear-gradient(135deg,#3b5bdb,#7048e8)] px-[9px] py-0.5 text-[12px] font-bold tracking-[.3px] transition-[filter] hover:brightness-115"
+              className="flex items-center self-stretch rounded border border-transparent bg-[linear-gradient(135deg,#3b5bdb,#7048e8)] px-[9px] py-0.5 text-fl-xs font-bold tracking-[.3px] transition-[filter] hover:brightness-115"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/images/logo/SOOP_LOGO_White.svg" alt="SOOP" className="block h-[11px] w-auto" />
+              <img src="/images/logo/SOOP_LOGO_White.svg" alt="SOOP" className="block h-[.95em] w-auto" />
             </a>
           )}
           {lastLogin && (
-            <span className="ml-1.5 flex items-center gap-1 text-[13px] font-semibold text-tx2">
-              <Clock className="h-3.5 w-3.5" />
+            <span className="ml-1.5 flex items-center gap-1 text-fl-xs font-semibold text-tx2">
+              <Clock className="h-[1em] w-[1em]" />
               {timeAgo(lastLogin)}
             </span>
           )}

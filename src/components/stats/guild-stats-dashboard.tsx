@@ -63,16 +63,16 @@ export function GuildStatsDashboard() {
   const onTab = (k: string) => k !== "stats" && router.push(k === "raid" ? "/viewer?tab=raid" : "/viewer");
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden">
+    <div className="flex h-dvh flex-col overflow-hidden">
       <TopNav active="stats" onTab={onTab} members={index?.members ?? null} onPick={pick} />
 
-      <main className="no-scrollbar min-w-0 flex-1 overflow-y-auto p-4 md:p-5">
+      <main className="no-scrollbar min-w-0 flex-1 overflow-y-auto p-[clamp(10px,1.4vw,28px)]">
         {error ? (
           <Center>데이터를 불러오지 못했습니다 · {error}</Center>
         ) : loading ? (
           <Center><div className="spin" /><span className="mt-2">길드 데이터 불러오는 중…</span></Center>
         ) : (
-          <div className="anim-up flex flex-col gap-3.5">
+          <div className="anim-up mx-auto flex w-full max-w-[1800px] flex-col gap-[clamp(12px,1.2vw,22px)]">
           <Card
             eyebrow="Leaderboard"
             title="직업별 스탯 리더보드"
@@ -88,16 +88,16 @@ export function GuildStatsDashboard() {
             }
           >
             {rankError ? (
-              <div className="py-8 text-center text-[13px] text-white/60">리더보드 데이터를 불러오지 못했습니다</div>
+              <div className="py-8 text-center text-fl-sm text-white/60">리더보드 데이터를 불러오지 못했습니다</div>
             ) : rank ? (
               <StatLeaderboard members={members} stats={rank.stats} onPick={pick} />
             ) : (
               <div className="flex h-40 items-center justify-center"><div className="spin" /></div>
             )}
           </Card>
-          <div className="grid gap-3.5 lg:grid-cols-[1fr_2fr]">
+          <div className="grid gap-[clamp(12px,1.2vw,22px)] lg:grid-cols-[1fr_2fr]">
             <Card eyebrow="Class Share" title="직업 비율" note={`총 ${total}명`}>
-              <div className="h-[260px] p-[3px] lg:h-[300px]">
+              <div className="h-[clamp(260px,24vw,440px)] p-[3px]">
                 <ClassTreemap data={classData} total={total} selected={cls} onSelect={selectClass} />
               </div>
             </Card>
@@ -109,14 +109,14 @@ export function GuildStatsDashboard() {
             >
               {/* 특성 칩: 직업 선택 시에만 */}
               {cls != null && (
-                <div key={cls} className="anim-fade flex flex-wrap gap-1">
+                <div key={cls} className="anim-fade flex flex-wrap gap-[.35em] text-fl-sm">
                   {[{ k: "all", l: "전체" }, ...specs.map((s) => ({ k: s, l: s })), ...(hasUnknown ? [{ k: "none", l: "알 수 없음" }] : [])].map(({ k, l }) => (
                     <button
                       key={k}
                       onClick={() => setSpec(k)}
                       style={spec === k ? { color: c?.color, borderColor: c?.color, backgroundColor: `${c?.color}24` } : undefined}
                       className={cn(
-                        "rounded border px-2.5 py-1 text-[13px] font-bold transition-colors",
+                        "rounded-md border px-[.85em] py-[.35em] font-bold transition-colors",
                         spec !== k && "border-white/20 text-white hover:bg-white/[.08]"
                       )}
                     >
@@ -125,7 +125,7 @@ export function GuildStatsDashboard() {
                   ))}
                 </div>
               )}
-              <div className="h-[240px] lg:h-auto lg:min-h-[240px] lg:flex-1">
+              <div className="h-[clamp(240px,22vw,400px)] lg:h-auto lg:min-h-[clamp(240px,20vw,400px)] lg:flex-1">
                 <LevelDistChart levels={levels} all={all} sel={selCounts} selColor={c?.color} selLabel={selLabel} />
               </div>
             </Card>
@@ -136,7 +136,7 @@ export function GuildStatsDashboard() {
 
       <footer className="flex h-7 shrink-0 items-center justify-center gap-6 overflow-hidden whitespace-nowrap border-t border-line px-4 text-[10.5px] text-tx3/50">
         <span>© 2026 WOW.FOREVER</span>
-        <span className="hidden md:inline">{FAN_NOTICE}</span>
+        <span className="hidden text-[7px] md:inline">{FAN_NOTICE}</span>
         {index && <span className="hidden sm:inline">수집 {new Date(index.collectedAt).toLocaleString("ko-KR")}</span>}
       </footer>
     </div>
@@ -159,18 +159,18 @@ function Card({ eyebrow, title, titleExtra, note, children }: { eyebrow?: string
     <section className="relative flex flex-col overflow-hidden rounded-xl border border-white/[.07] bg-[rgba(10,12,18,.72)] backdrop-blur-md">
       {/* 상단 하이라이트 라인 */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
-      <header className="flex shrink-0 flex-wrap items-end justify-between gap-x-4 gap-y-1 border-b border-white/[.06] px-5 pb-3 pt-4">
+      <header className="flex shrink-0 flex-wrap items-end justify-between gap-x-4 gap-y-2 border-b border-white/[.06] px-[clamp(14px,1.4vw,28px)] pb-[clamp(10px,.9vw,16px)] pt-[clamp(12px,1.1vw,20px)]">
         <div className="min-w-0">
-          {eyebrow && <div className="font-display text-[10px] font-bold uppercase tracking-[3px] text-white/45">{eyebrow}</div>}
+          {eyebrow && <div className="font-display text-fl-2xs font-bold uppercase tracking-[3px] text-white/45">{eyebrow}</div>}
           {/* relative: titleExtra 말풍선의 기준 — 좁은 화면에서도 카드 밖으로 잘리지 않도록 제목 왼쪽에 맞춤 */}
           <div className="relative mt-0.5 flex flex-wrap items-center gap-x-2.5 gap-y-1">
-            <h2 className="text-[16px] font-extrabold tracking-[.2px] text-white">{title}</h2>
+            <h2 className="text-fl-xl font-extrabold tracking-[.2px] text-white">{title}</h2>
             {titleExtra}
           </div>
         </div>
-        {note != null && (typeof note === "string" ? <span className="truncate pb-0.5 text-[12px] font-medium text-white/60">{note}</span> : note)}
+        {note != null && (typeof note === "string" ? <span className="truncate pb-0.5 text-fl-sm font-medium text-white/60">{note}</span> : note)}
       </header>
-      <div className="flex flex-1 flex-col gap-3 p-5">{children}</div>
+      <div className="flex flex-1 flex-col gap-[clamp(10px,1vw,18px)] p-[clamp(12px,1.4vw,28px)]">{children}</div>
     </section>
   );
 }
@@ -178,11 +178,11 @@ function Card({ eyebrow, title, titleExtra, note, children }: { eyebrow?: string
 /** 데이터 수집 불가능 멤버 — 물음표 hover/포커스 시 이름과 사유 표시 */
 function NoDataNote({ members }: { members: Member[] }) {
   return (
-    <span className="inline-flex items-center gap-1 text-[11.5px] font-medium text-white/60">
+    <span className="inline-flex items-center gap-1 text-fl-xs font-medium text-white/60">
       데이터 수집 불가능 멤버 {members.length}명
       <span tabIndex={0} aria-label="데이터 수집 불가능 멤버 안내" className="group inline-flex cursor-help rounded-full outline-none">
-        <HelpCircle className="h-3 w-3 transition-colors group-hover:text-white group-focus:text-white" />
-        <span role="tooltip" className="pointer-events-none absolute left-0 top-full z-30 mt-1.5 hidden w-[min(420px,calc(100vw-5rem))] rounded-md border border-white/15 bg-[#171a23] px-3 py-2.5 text-[12px] leading-relaxed text-white shadow-lg group-hover:block group-focus:block">
+        <HelpCircle className="h-[1em] w-[1em] transition-colors group-hover:text-white group-focus:text-white" />
+        <span role="tooltip" className="pointer-events-none absolute left-0 top-full z-30 mt-1.5 hidden w-[min(420px,calc(100vw-5rem))] rounded-md border border-white/15 bg-[#171a23] px-3 py-2.5 text-fl-xs leading-relaxed text-white shadow-lg group-hover:block group-focus:block">
           <span className="block font-bold">{members.map((m) => `${m.name} ${m.surname}`).join(", ")}</span>
           <span className="mt-2 block border-t border-white/10 pt-2 text-white/70">
             ※ 블리자드 계정 옵션 - [게임 데이터 및 프로필 공개 설정] 체크가 안 되어 있는 유저는 데이터 수집이 불가능합니다.
@@ -196,8 +196,8 @@ function NoDataNote({ members }: { members: Member[] }) {
 /** 카드 헤더 정보 칩 (아이콘 + 짧은 문구) */
 function InfoChip({ icon: Icon, children }: { icon: React.ComponentType<{ className?: string }>; children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-white/10 bg-white/[.04] px-2.5 py-1 text-[11.5px] font-semibold text-white/85">
-      <Icon className="h-3 w-3 text-white/55" />
+    <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-white/10 bg-white/[.04] px-[.85em] py-[.3em] text-fl-xs font-semibold text-white/85">
+      <Icon className="h-[1em] w-[1em] text-white/55" />
       {children}
     </span>
   );

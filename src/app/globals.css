@@ -36,6 +36,13 @@
 
   --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif;
   --font-display: "Cinzel", serif;
+
+  /* 반응형 치수 — 길드원 목록 폭 · 장비 슬롯 크기 */
+  --sb-w: min(88vw, 380px);
+  --slot: clamp(40px, 2.7vw, 54px);
+}
+@media (min-width: 1024px) {
+  :root { --sb-w: clamp(300px, 21vw, 400px); }
 }
 
 @theme inline {
@@ -59,6 +66,14 @@
   --color-gold: var(--gold3);
   --font-sans: var(--font-sans);
   --font-display: var(--font-display);
+
+  /* 화면 폭에 따라 자동으로 커지는 글자 크기 (text-fl-*) — 375px 모바일 ~ 1440px+ 데스크톱 */
+  --text-fl-2xs: clamp(11.5px, 0.6rem + 0.3vw, 14px);
+  --text-fl-xs: clamp(12.5px, 0.65rem + 0.35vw, 15.5px);
+  --text-fl-sm: clamp(13.5px, 0.7rem + 0.42vw, 17px);
+  --text-fl-base: clamp(14.5px, 0.72rem + 0.5vw, 19px);
+  --text-fl-lg: clamp(16px, 0.8rem + 0.6vw, 22px);
+  --text-fl-xl: clamp(18px, 0.9rem + 0.75vw, 26px);
 }
 
 @layer base {
@@ -124,7 +139,7 @@
 
 /* ── 장비 슬롯 (WEB_PROJECT .slot) ── */
 .slot {
-  width: 46px; height: 46px; background: var(--bg3);
+  width: var(--slot); height: var(--slot); background: var(--bg3);
   border: 1.5px solid var(--border); border-radius: 4px;
   position: relative; overflow: hidden; flex-shrink: 0;
   transition: border-color 0.1s, transform 0.08s, box-shadow 0.1s;

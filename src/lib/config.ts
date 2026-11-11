@@ -13,7 +13,7 @@ export const SITE_URL = "https://wafo-haja.vercel.app";
 
 /** 블리자드 상표·API 이용 고지 (랜딩·뷰어·404 공통) */
 export const FAN_NOTICE =
-  "World of Warcraft® 및 Blizzard Entertainment®는 Blizzard Entertainment, Inc.의 상표입니다. 이 사이트는 Blizzard와 무관한 비공식 팬사이트입니다.";
+  "WoW® · Blizzard®는 Blizzard Entertainment의 상표이며, 본 사이트는 Blizzard와 무관한 비공식 팬사이트입니다.";
 
 /** Update 버튼 사용 가능 여부 (Worker 주소가 있을 때만) */
 export const CAN_REFRESH = !!API_BASE;

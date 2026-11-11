@@ -6,7 +6,7 @@ export const metadata = { title: "페이지를 찾을 수 없습니다 — WOW F
 /** 404 — 랜딩과 같은 배경·톤 */
 export default function NotFound() {
   return (
-    <div className="relative flex h-screen items-center justify-center overflow-hidden anim-fade">
+    <div className="relative flex h-dvh items-center justify-center overflow-hidden anim-fade">
       <div className="absolute inset-0 bg-[url('/background/zephras.jpg')] bg-cover bg-[center_45%]" />
       <div className="absolute inset-0 bg-[rgba(5,10,20,.72)]" />
 
@@ -23,7 +23,7 @@ export default function NotFound() {
         </div>
       </div>
 
-      <footer className="absolute inset-x-0 bottom-0 z-[2] px-6 pb-4 text-center text-[10.5px] leading-relaxed text-white/40">
+      <footer className="absolute inset-x-0 bottom-0 z-[2] px-6 pb-4 text-center text-[7px] leading-relaxed text-white/40">
         {FAN_NOTICE}
       </footer>
     </div>

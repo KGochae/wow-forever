@@ -112,9 +112,9 @@ function Icon({ id, size }: { id: number; size: number }) {
  * - stack: 아이콘 / 이름 / % 세로 가운데 (좁은 칸) — 그래도 안 되면 이름·%부터 생략 (툴팁으로 확인)
  */
 function fit(len: number, w: number, h: number) {
-  const icon = 28;
-  const rowFont = Math.min(15, (w - 16 - icon - 6) / (len * 1.02));
-  if (rowFont >= 12 && h >= 64) return { mode: "row" as const, icon, font: rowFont, pct: Math.min(16, rowFont + 1) };
+  const icon = Math.round(Math.max(28, Math.min(44, Math.min(w, h) / 4)));
+  const rowFont = Math.min(22, (w - 16 - icon - 6) / (len * 1.02));
+  if (rowFont >= 12 && h >= 64) return { mode: "row" as const, icon, font: rowFont, pct: Math.min(26, rowFont + 3) };
   const font = Math.min(14, (w - 8) / (len * 1.02));
   const ic = Math.min(28, w - 10, h - 8);
   const okFont = font >= 10;
@@ -141,12 +141,12 @@ export function LevelDistChart({
   const { tip, show, hide } = useChartTip();
   const max = Math.max(1, ...levels.map((l) => all.get(l) ?? 0));
   return (
-    <div className="flex h-full flex-col">
-      <div className="relative min-h-0 flex-1 pl-9">
+    <div className="flex h-full flex-col text-fl-2xs">
+      <div className="relative min-h-0 flex-1 pl-[3em]">
         {/* 그리드 */}
         {[0, 0.25, 0.5, 0.75, 1].map((v) => (
-          <div key={v} className="pointer-events-none absolute left-9 right-0 h-px bg-white/[.06]" style={{ bottom: `${v * 100}%` }}>
-            <span className="absolute -left-9 w-7 -translate-y-1/2 text-right text-[12px] tabular-nums text-white">{Math.round(v * max)}</span>
+          <div key={v} className="pointer-events-none absolute left-[3em] right-0 h-px bg-white/[.06]" style={{ bottom: `${v * 100}%` }}>
+            <span className="absolute -left-[3em] w-[2.4em] -translate-y-1/2 text-right tabular-nums text-white">{Math.round(v * max)}</span>
           </div>
         ))}
         <div className="relative flex h-full items-end" onPointerLeave={hide}>
@@ -161,7 +161,7 @@ export function LevelDistChart({
                 onPointerMove={(e) =>
                   show(e, (
                     <>
-                      <div className="mb-1 text-[12px] text-white/80">Lv {l}</div>
+                      <div className="mb-1 text-fl-xs text-white/80">Lv {l}</div>
                       <hr className="border-white/10" />
                       {sel ? (
                         <>
@@ -169,7 +169,7 @@ export function LevelDistChart({
                           <Row label={selLabel ?? ""} v={`${k}명 (${n ? Math.round((k / n) * 100) : 0}%)`} />
                         </>
                       ) : (
-                        <div className="mt-1 text-[14px] font-extrabold text-white">{n}명</div>
+                        <div className="mt-1 text-fl-base font-extrabold text-white">{n}명</div>
                       )}
                     </>
                   ))
@@ -188,9 +188,9 @@ export function LevelDistChart({
           })}
         </div>
       </div>
-      <div className="flex pl-9 pt-1.5">
+      <div className="flex pl-[3em] pt-1.5">
         {levels.map((l, i) => (
-          <span key={l} className={cn("flex-1 text-center text-[12px] tabular-nums text-white", i % 2 && i !== levels.length - 1 && "max-md:invisible")}>{l}</span>
+          <span key={l} className={cn("flex-1 text-center tabular-nums text-white", i % 2 && i !== levels.length - 1 && "max-md:invisible")}>{l}</span>
         ))}
       </div>
       <ChartTip tip={tip} />
@@ -201,8 +201,8 @@ export function LevelDistChart({
 function Row({ label, v }: { label: string; v: string }) {
   return (
     <div className="mt-1 flex justify-between gap-4">
-      <span className="text-[13px] text-white/80">{label}</span>
-      <span className="text-[14px] font-extrabold text-white">{v}</span>
+      <span className="text-fl-xs text-white/80">{label}</span>
+      <span className="text-fl-sm font-extrabold text-white">{v}</span>
     </div>
   );
 }

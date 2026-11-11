@@ -20,7 +20,7 @@ export function ChartTip({ tip }: { tip: TipState }) {
   return createPortal(
     <div
       role="tooltip"
-      className="pointer-events-none fixed z-[60] min-w-[120px] rounded-md border border-[var(--glass-border)] bg-[rgba(12,14,20,.96)] px-3 py-2 text-[13px] leading-relaxed text-white shadow-[0_10px_30px_rgba(0,0,0,.6)]"
+      className="pointer-events-none fixed z-[60] min-w-[120px] rounded-md border border-[var(--glass-border)] bg-[rgba(12,14,20,.96)] px-3 py-2 text-fl-xs leading-relaxed text-white shadow-[0_10px_30px_rgba(0,0,0,.6)]"
       style={{ left: flip ? tip.x - 14 : tip.x + 14, top: tip.y + 14, transform: flip ? "translateX(-100%)" : undefined }}
     >
       {tip.body}

@@ -18,18 +18,18 @@ function NodeTip({ n, rank }: { n: TalentNode; rank: number }) {
   const cur = rank > 0 ? n.ranks[rank - 1] : null;
   const next = rank < n.maxRank ? n.ranks[rank] : null;
   return (
-    <div className="text-[13px] leading-[1.55]">
-      <div className="text-[16px] font-extrabold text-tx1">{n.name}</div>
-      <div className="mb-1 text-[13px] font-bold text-gold">레벨 {rank}/{n.maxRank}</div>
-      {n.castTime && <div className="text-[12px] text-tx3">{n.castTime}</div>}
+    <div className="text-fl-xs leading-[1.55]">
+      <div className="text-fl-base font-extrabold text-tx1">{n.name}</div>
+      <div className="mb-1 text-fl-xs font-bold text-gold">레벨 {rank}/{n.maxRank}</div>
+      {n.castTime && <div className="text-fl-xs text-tx3">{n.castTime}</div>}
       {cur && <div className="mt-1 text-[#ffd100]">{cur}</div>}
       {next && (
         <>
-          <div className="mt-2 text-[12px] font-bold text-tx2">{rank > 0 ? "다음 레벨:" : ""}</div>
+          <div className="mt-2 text-fl-xs font-bold text-tx2">{rank > 0 ? "다음 레벨:" : ""}</div>
           <div className="text-[#ffd100]/90">{next}</div>
         </>
       )}
-      {n.nameKoMissing && <div className="mt-1.5 text-[11px] text-tx3">※ 한국어 이름 미제공 (영문 표기)</div>}
+      {n.nameKoMissing && <div className="mt-1.5 text-fl-2xs text-tx3">※ 한국어 이름 미제공 (영문 표기)</div>}
     </div>
   );
 }
@@ -118,8 +118,8 @@ function Tree({ tree, points, ranks, classId }: { tree: TalentSpecTree; points: 
           // eslint-disable-next-line @next/next/no-img-element
           <img src={headIcon} alt="" className="h-7 w-7 rounded-[3px] border border-white/15" />
         )}
-        <span className="text-[16px] font-extrabold text-tx1 [text-shadow:0_1px_4px_rgba(0,0,0,.8)]">{tree.name}</span>
-        <span className={cn("ml-auto text-[14px] font-bold", points > 0 ? "text-tx1" : "text-tx3")}>{points} pts</span>
+        <span className="text-fl-base font-extrabold text-tx1 [text-shadow:0_1px_4px_rgba(0,0,0,.8)]">{tree.name}</span>
+        <span className={cn("ml-auto text-fl-sm font-bold", points > 0 ? "text-tx1" : "text-tx3")}>{points} pts</span>
       </div>
       <div className="relative mx-auto my-3" style={{ width: W, height: H }}>
         <Arrows nodes={tree.nodes} ranks={ranks} />
@@ -162,14 +162,14 @@ export function TalentColumn({ c }: { c?: CharacterDetail }) {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={cn("relative rounded-t px-2.5 pb-2 pt-1 text-[15px] font-extrabold transition-colors", tab === t ? "text-tx1" : "text-tx3 hover:text-tx2")}
+            className={cn("relative rounded-t px-2.5 pb-2 pt-1 text-fl-sm font-extrabold transition-colors", tab === t ? "text-tx1" : "text-tx3 hover:text-tx2")}
           >
             {t === "active" ? "Active" : "Secondary"}
-            {t === "active" && activeName && <span className="ml-1 text-[11px] font-semibold text-tx3">{activeName}</span>}
+            {t === "active" && activeName && <span className="ml-1 text-fl-2xs font-semibold text-tx3">{activeName}</span>}
             {tab === t && <span className="absolute inset-x-2 bottom-0 h-[2px] rounded-full bg-tx1" />}
           </button>
         ))}
-        {tab === "active" && total > 0 && <span className="mb-2 ml-auto pr-1 text-[11px] font-bold text-tx3">총 {total}pts</span>}
+        {tab === "active" && total > 0 && <span className="mb-2 ml-auto pr-1 text-fl-2xs font-bold text-tx3">총 {total}pts</span>}
       </div>
 
       <div key={`${c?.id}-${tab}`} className="talent-scroll min-h-0 flex-1 space-y-3 overflow-y-auto p-2">
@@ -188,5 +188,5 @@ export function TalentColumn({ c }: { c?: CharacterDetail }) {
 }
 
 function Placeholder({ text }: { text: string }) {
-  return <div className="flex h-24 items-center justify-center rounded border border-dashed border-line2 text-[12px] text-tx3">{text}</div>;
+  return <div className="flex h-24 items-center justify-center rounded border border-dashed border-line2 text-fl-xs text-tx3">{text}</div>;
 }

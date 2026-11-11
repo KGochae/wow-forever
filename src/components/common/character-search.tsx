@@ -50,7 +50,7 @@ export function CharacterSearch({ members, onPick, variant = "nav", autoFocus }:
         {loading && landing ? (
           <span className="spin mx-3.5 my-3 !h-4 !w-4 shrink-0" />
         ) : (
-          <Search className={cn("shrink-0 text-white/40", landing ? "mx-3.5 h-[18px] w-[18px]" : "ml-2.5 h-3.5 w-3.5")} />
+          <Search className={cn("shrink-0 text-white/40", landing ? "mx-3.5 h-[18px] w-[18px]" : "ml-[.7em] h-[1em] w-[1em] text-fl-sm")} />
         )}
         <input
           value={q}
@@ -68,7 +68,7 @@ export function CharacterSearch({ members, onPick, variant = "nav", autoFocus }:
           aria-label="캐릭터 검색"
           className={cn(
             "min-w-0 flex-1 bg-transparent text-tx outline-none placeholder:text-white/25",
-            landing ? "px-1 py-3 text-[15px]" : "px-2 py-[6px] text-[14px] lg:text-[15px]"
+            landing ? "px-1 py-3 text-fl-base" : "px-[.55em] py-[.4em] text-fl-sm"
           )}
         />
         <button
@@ -76,8 +76,8 @@ export function CharacterSearch({ members, onPick, variant = "nav", autoFocus }:
           className={cn(
             "shrink-0 font-bold tracking-[.3px] text-white transition-colors",
             landing
-              ? "border-l border-white/10 bg-white/[.12] px-6 py-[15px] text-[15px] hover:bg-white/[.22] active:bg-white/[.07]"
-              : "border-l border-white/10 bg-white/[.12] px-3 py-[7px] text-[13px] hover:bg-white/[.22] active:bg-white/[.07] lg:px-3.5 lg:text-[14px]"
+              ? "border-l border-white/10 bg-white/[.12] px-6 py-[15px] text-fl-base hover:bg-white/[.22] active:bg-white/[.07]"
+              : "border-l border-white/10 bg-white/[.12] px-[.85em] py-[.45em] text-fl-sm hover:bg-white/[.22] active:bg-white/[.07]"
           )}
         >
           검색
@@ -94,17 +94,17 @@ export function CharacterSearch({ members, onPick, variant = "nav", autoFocus }:
                   type="button"
                   onMouseDown={(e) => { e.preventDefault(); pick(m); }}
                   onMouseEnter={() => setHi(i)}
-                  className={cn("flex w-full items-center gap-2.5 px-3 py-1.5 text-left", i === hi && "bg-white/[.06]")}
+                  className={cn("flex w-full items-center gap-[.6em] px-[.8em] py-[.4em] text-left text-fl-sm", i === hi && "bg-white/[.06]")}
                 >
                   {m.avatar ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={m.avatar} alt="" className="h-6 w-6 rounded-full object-cover object-top" />
+                    <img src={m.avatar} alt="" className="h-[1.7em] w-[1.7em] rounded-full object-cover object-top" />
                   ) : (
-                    <span className="h-6 w-6 rounded-full border" style={{ borderColor: `${cls?.color}66` }} />
+                    <span className="h-[1.7em] w-[1.7em] rounded-full border" style={{ borderColor: `${cls?.color}66` }} />
                   )}
-                  <span className="flex-1 truncate text-[13px] font-bold text-tx">{m.name} {m.surname}</span>
-                  <span className="text-[11px] text-tx3">Lv {m.level}</span>
-                  <span className="text-[11px] font-bold" style={{ color: cls?.color }}>{cls?.name}</span>
+                  <span className="flex-1 truncate font-bold text-tx">{m.name} {m.surname}</span>
+                  <span className="text-[.82em] text-tx3">Lv {m.level}</span>
+                  <span className="text-[.82em] font-bold" style={{ color: cls?.color }}>{cls?.name}</span>
                 </button>
               </li>
             );
@@ -113,7 +113,7 @@ export function CharacterSearch({ members, onPick, variant = "nav", autoFocus }:
       )}
 
       {err && (
-        <div className="mt-2 flex items-center gap-1.5 rounded-[5px] border border-[rgba(224,96,96,.25)] bg-[rgba(224,96,96,.08)] px-2.5 py-1.5 text-[14px] text-[var(--red)]">
+        <div className="mt-2 flex items-center gap-1.5 rounded-[5px] border border-[rgba(224,96,96,.25)] bg-[rgba(224,96,96,.08)] px-2.5 py-1.5 text-fl-sm text-[var(--red)]">
           <span>⚠</span>{err}
         </div>
       )}

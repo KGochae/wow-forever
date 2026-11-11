@@ -10,6 +10,8 @@ import type { RankStats } from "@/lib/use-rank-data";
  * 직업별 스탯 리더보드 (WEB_PROJECT stats.js stRenderClassTable 구성)
  * - 값: 로그아웃 시점 최종수치 (장비·특성 포함)
  * - 컬럼: 직업별 주요 스탯 (첫 컬럼 = 기본 정렬) · 헤더 클릭 정렬 · 공동 순위 · 30명/페이지
+ * - 크기: 고정 px 대신 text-fl-* (화면 폭 비례) + em 단위 여백/아바타 → 화면이 커지면 표 전체가 같이 커짐
+ * - 필터: 위쪽 가로 칩 (왼쪽 고정 폭 열 제거 → 표가 전체 폭 사용)
  */
 type Col = { k: string; l: string };
 const L: Record<string, string> = {
@@ -43,6 +45,11 @@ const fmt = (k: string, v: number | null | undefined) => {
 
 const PAGE = 30;
 const CLASS_ORDER = [1, 2, 3, 4, 5, 7, 8, 9, 11];
+
+/* 고정 열(순위·캐릭터) — th/td 모두 같은 글자 크기(text-fl-base)라 em 기준 위치가 일치 */
+const RANK_W = "w-[3.4em] min-w-[3.4em]";
+const NAME_LEFT = "left-[3.4em]";
+const CELL = "px-[.8em] py-[.55em]";
 
 export function StatLeaderboard({ members, stats, onPick }: { members: Member[]; stats: RankStats; onPick: (m: Member) => void }) {
   const counts = useMemo(() => {
@@ -83,13 +90,6 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
     });
   }, [inClass, spec, sortKey, dir, stats]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // 컬럼별 최고값 (현재 필터 기준) — 정렬 컬럼 막대용
-  const maxOf = useMemo(() => {
-    const o: Record<string, number> = {};
-    for (const c of columns) o[c.k] = Math.max(0, ...rows.map(({ m }) => stats.get(m.id)?.[c.k] ?? 0));
-    return o;
-  }, [rows, columns, stats]);
-
   const pages = Math.max(1, Math.ceil(rows.length / PAGE));
   const cur = Math.min(page, pages - 1);
   const view = rows.slice(cur * PAGE, cur * PAGE + PAGE);
@@ -100,74 +100,53 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
     setSort((s) => (s?.k === k || (!s && k === "level") ? { k, dir: dir === "desc" ? "asc" : "desc" } : { k, dir: "desc" }));
     setPage(0);
   };
+  const Arrow = ({ on }: { on: boolean }) =>
+    on ? (dir === "desc" ? <ChevronDown className="h-[.9em] w-[.9em]" /> : <ChevronUp className="h-[.9em] w-[.9em]" />) : null;
 
   return (
-    <div className="flex flex-col gap-3 lg:flex-row lg:items-start">
-      {/* 왼쪽 필터 (좁은 화면: 위쪽 가로 스크롤) */}
-      <aside className="flex shrink-0 flex-col gap-2 lg:sticky lg:top-0 lg:w-[148px]">
-        <FilterGroup title="클래스">
+    <div className="flex flex-col gap-[clamp(10px,1vw,18px)]">
+      {/* 필터: 위쪽 가로 칩 (줄바꿈) */}
+      <div className="flex flex-col gap-[clamp(6px,.6vw,10px)]">
+        <ChipRow title="클래스">
           {classes.map((id) => {
             const c = CLASS_INFO[id];
-            const on = id === cls;
             return (
-              <button
-                key={id}
-                onClick={() => pickClass(id)}
-                style={on ? { color: c.color, borderColor: c.color, backgroundColor: `${c.color}24` } : undefined}
-                className={cn(
-                  "shrink-0 rounded-md border px-2.5 py-1.5 text-center text-[13.5px] font-extrabold transition-colors",
-                  !on && "border-white/15 text-white hover:bg-white/[.08]"
-                )}
-              >
+              <Chip key={id} on={id === cls} color={c.color} onClick={() => pickClass(id)} strong>
                 {c.name}
-              </button>
+              </Chip>
             );
           })}
-        </FilterGroup>
-
-        <FilterGroup title="특성" key={cls}>
+        </ChipRow>
+        <ChipRow title="특성" key={cls}>
           {[{ k: "all", l: "전체" }, ...specs.map((s) => ({ k: s, l: s })), ...(hasUnknown ? [{ k: "none", l: "알 수 없음" }] : [])].map(({ k, l }) => (
-            <button
-              key={k}
-              onClick={() => { setSpec(k); setPage(0); }}
-              style={spec === k ? { color, borderColor: color, backgroundColor: `${color}24` } : undefined}
-              className={cn("shrink-0 rounded-md border px-2.5 py-1.5 text-center text-[13px] font-bold transition-colors", spec !== k && "border-white/15 text-white hover:bg-white/[.08]")}
-            >
+            <Chip key={k} on={spec === k} color={color} onClick={() => { setSpec(k); setPage(0); }}>
               {l}
-            </button>
+            </Chip>
           ))}
-        </FilterGroup>
-      </aside>
+        </ChipRow>
+      </div>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-3">
       {/* 표 */}
       <div className="no-scrollbar overflow-x-auto rounded-lg border border-white/[.06]">
-        <table className="w-full border-collapse text-[15px] text-white">
+        <table className="w-full border-collapse text-fl-base text-white">
           <thead>
             <tr className="border-b border-white/10 bg-white/[.03]">
-              <th className="sticky left-0 z-[1] w-12 bg-[#11131b] px-2 py-2.5 text-center text-[13.5px] font-bold text-white/70">순위</th>
-              <th className="sticky left-12 z-[1] w-[230px] min-w-[210px] bg-[#11131b] px-2 py-2.5 text-left text-[13.5px] font-bold text-white/70">캐릭터</th>
-              <th className="w-[60px] px-3 py-2.5 text-right">
-                <button
-                  onClick={() => pickSort("level")}
-                  className={cn("inline-flex items-center gap-0.5 text-[14px] font-extrabold transition-colors", sortKey === "level" ? "" : "text-white/70 hover:text-white")}
-                  style={sortKey === "level" ? { color } : undefined}
-                >
-                  Lv
-                  {sortKey === "level" ? (dir === "desc" ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronUp className="h-3.5 w-3.5" />) : <span className="w-3.5" />}
-                </button>
+              <th className={cn("sticky left-0 z-[1] bg-[#11131b] text-center font-bold text-white", RANK_W, CELL)}>
+                <span className="text-[.88em]">순위</span>
               </th>
-              {columns.map((c) => {
+              <th className={cn("sticky z-[1] bg-[#11131b] text-left font-bold text-white", NAME_LEFT, CELL)}>
+                <span className="text-[.88em]">캐릭터</span>
+              </th>
+              {[{ k: "level", l: "Lv" }, ...columns].map((c) => {
                 const on = c.k === sortKey;
                 return (
-                  <th key={c.k} className="px-3 py-2.5 text-right">
+                  <th key={c.k} className={cn("text-center", CELL)}>
                     <button
                       onClick={() => pickSort(c.k)}
-                      className={cn("inline-flex items-center gap-0.5 whitespace-nowrap text-[14px] font-extrabold transition-colors", on ? "text-white" : "text-white/70 hover:text-white")}
-                      style={on ? { color } : undefined}
+                      className={cn("inline-flex items-center justify-center gap-[.15em] whitespace-nowrap text-[.92em] font-extrabold text-white transition-opacity", !on && "hover:opacity-80")}
                     >
                       {c.l}
-                      {on ? (dir === "desc" ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronUp className="h-3.5 w-3.5" />) : <span className="w-3.5" />}
+                      <Arrow on={on} />
                     </button>
                   </th>
                 );
@@ -180,39 +159,33 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
               const top3 = rank != null && rank <= 3 && dir === "desc";
               return (
                 <tr key={m.id} onClick={() => onPick(m)} className="group cursor-pointer border-b border-white/[.04] transition-colors hover:bg-white/[.05]">
-                  <td className="sticky left-0 bg-[#0f1118] px-2 py-2 text-center group-hover:bg-[#171a23]" style={top3 ? { boxShadow: `inset 2px 0 0 ${["#f7cd4f", "#c9d3df", "#d89d62"][rank - 1]}` } : undefined}>
-                    <span className={cn("inline-flex h-7 min-w-7 items-center justify-center rounded-md px-1 text-[15px] font-black tabular-nums", top3 ? `medal medal-${rank}` : "text-white")}>
+                  <td className={cn("sticky left-0 bg-[#0f1118] text-center group-hover:bg-[#171a23]", RANK_W, CELL)} style={top3 ? { boxShadow: `inset 3px 0 0 ${["#f7cd4f", "#c9d3df", "#d89d62"][rank - 1]}` } : undefined}>
+                    <span className={cn("inline-flex h-[1.9em] min-w-[1.9em] items-center justify-center rounded-md px-[.25em] font-black tabular-nums", top3 ? `medal medal-${rank}` : "text-white")}>
                       {rank ?? "-"}
                     </span>
                   </td>
-                  <td className="sticky left-12 bg-[#0f1118] px-2 py-2 group-hover:bg-[#171a23]">
-                    <div className="flex items-center gap-2">
+                  <td className={cn("sticky bg-[#0f1118] group-hover:bg-[#171a23]", NAME_LEFT, CELL)}>
+                    <div className="flex items-center gap-[.6em]">
                       {m.avatar ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={m.avatar} alt="" loading="lazy" className="h-7 w-7 rounded-full border border-white/20 object-cover object-top" />
+                        <img src={m.avatar} alt="" loading="lazy" className="h-[2.1em] w-[2.1em] shrink-0 rounded-full border border-white/20 object-cover object-top" />
                       ) : (
-                        <span className="flex h-7 w-7 items-center justify-center rounded-full border text-[12px] font-bold" style={{ borderColor: `${color}66`, color }}>{m.name[0]}</span>
+                        <span className="flex h-[2.1em] w-[2.1em] shrink-0 items-center justify-center rounded-full border text-[.85em] font-bold" style={{ borderColor: `${color}66`, color }}>{m.name[0]}</span>
                       )}
                       <div className="flex min-w-0 flex-col leading-tight">
-                        <span className="max-w-[180px] truncate text-[15px] font-bold text-white" title={`${m.name} ${m.surname}`}>{m.name} {m.surname}</span>
-                        <span className="text-[12.5px] text-white/60">{m.spec ?? "알 수 없음"}</span>
+                        <span className="max-w-[7.5em] truncate font-bold text-white md:max-w-[11em]" title={`${m.name} ${m.surname}`}>{m.name} {m.surname}</span>
+                        <span className="text-[.8em] text-white/60">{m.spec ?? "알 수 없음"}</span>
                       </div>
                     </div>
                   </td>
-                  <td className={cn("px-3 py-2 pr-[26px] text-right tabular-nums", sortKey === "level" ? "font-extrabold text-white" : "text-white")}>{m.level}</td>
+                  <td className={cn("text-center tabular-nums text-white", CELL, sortKey === "level" && "font-extrabold")}>
+                    {m.level}
+                  </td>
                   {columns.map((c) => {
-                    const v = s?.[c.k] ?? null;
                     const on = c.k === sortKey;
                     return (
-                      <td key={c.k} className={cn("whitespace-nowrap px-3 py-2 text-right tabular-nums", on ? "font-extrabold" : "text-white")}>
-                        {on ? (
-                          <div className="flex items-center justify-end gap-2">
-                            <div className="hidden h-1.5 w-14 overflow-hidden rounded-full bg-white/[.08] sm:block">
-                              <div className="h-full rounded-full" style={{ width: `${maxOf[c.k] ? ((v ?? 0) / maxOf[c.k]) * 100 : 0}%`, background: color }} />
-                            </div>
-                            <span>{fmt(c.k, v)}</span>
-                          </div>
-                        ) : fmt(c.k, v)}
+                      <td key={c.k} className={cn("whitespace-nowrap text-center tabular-nums text-white", CELL, on && "font-extrabold")}>
+                        {fmt(c.k, s?.[c.k] ?? null)}
                       </td>
                     );
                   })}
@@ -220,7 +193,7 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
               );
             })}
             {!view.length && (
-              <tr><td colSpan={columns.length + 3} className="py-10 text-center text-[13px] text-white/60">해당 조건의 길드원이 없습니다</td></tr>
+              <tr><td colSpan={columns.length + 3} className="py-10 text-center text-fl-sm text-white/60">해당 조건의 길드원이 없습니다</td></tr>
             )}
           </tbody>
         </table>
@@ -228,25 +201,40 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
 
       {/* 페이지 */}
       {pages > 1 && (
-        <div className="flex items-center justify-center gap-1">
-          <PageBtn disabled={cur === 0} onClick={() => setPage(cur - 1)}><ChevronLeft className="h-4 w-4" /></PageBtn>
+        <div className="flex items-center justify-center gap-1 text-fl-sm">
+          <PageBtn disabled={cur === 0} onClick={() => setPage(cur - 1)}><ChevronLeft className="h-[1.1em] w-[1.1em]" /></PageBtn>
           {Array.from({ length: pages }, (_, i) => (
             <PageBtn key={i} active={i === cur} onClick={() => setPage(i)}>{i + 1}</PageBtn>
           ))}
-          <PageBtn disabled={cur === pages - 1} onClick={() => setPage(cur + 1)}><ChevronRight className="h-4 w-4" /></PageBtn>
+          <PageBtn disabled={cur === pages - 1} onClick={() => setPage(cur + 1)}><ChevronRight className="h-[1.1em] w-[1.1em]" /></PageBtn>
         </div>
       )}
-      </div>
     </div>
   );
 }
 
-function FilterGroup({ title, children }: { title: string; children: React.ReactNode }) {
+function ChipRow({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-1.5 rounded-lg bg-white/[.03] p-2">
-      <div className="px-0.5 text-[11px] font-extrabold tracking-[1.2px] text-white/70">{title}</div>
-      <div className="no-scrollbar flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">{children}</div>
+    <div className="flex items-start gap-[.75em] text-fl-sm">
+      <span className="shrink-0 pt-[.45em] text-[.82em] font-extrabold tracking-[1.2px] text-white/60">{title}</span>
+      <div className="flex flex-wrap gap-[.35em]">{children}</div>
     </div>
+  );
+}
+
+function Chip({ on, color, strong, onClick, children }: { on: boolean; color: string; strong?: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      style={on ? { color, borderColor: color, backgroundColor: `${color}24` } : undefined}
+      className={cn(
+        "rounded-md border px-[.85em] py-[.35em] text-center transition-colors",
+        strong ? "font-extrabold" : "font-bold",
+        !on && "border-white/15 text-white hover:bg-white/[.08]"
+      )}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -256,7 +244,7 @@ function PageBtn({ active, disabled, onClick, children }: { active?: boolean; di
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        "flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-[13px] font-bold tabular-nums transition-colors disabled:opacity-30",
+        "flex h-[2.2em] min-w-[2.2em] items-center justify-center rounded-md px-[.5em] font-bold tabular-nums transition-colors disabled:opacity-30",
         active ? "bg-white/15 text-white" : "text-white/70 hover:bg-white/[.08] hover:text-white"
       )}
     >
