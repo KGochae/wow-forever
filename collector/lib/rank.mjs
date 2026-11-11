@@ -7,10 +7,11 @@ export const RANK_KEYS = [
   "attack_power", "main_hand_dps", "off_hand_dps", "melee_crit",
   "ranged_attack_power", "ranged_crit",
   "spell_power", "spell_healing", "spell_crit", "mana_regen",
+  "last_login", // 마지막 접속(ms) — 리더보드 "기준" 열 (스탯 아님)
 ];
 
 const round = (v) => (typeof v === "number" && Number.isFinite(v) ? Math.round(v * 100) / 100 : null);
-export const rankRow = (c) => [c.id, ...RANK_KEYS.map((k) => round(c.stats?.[k]))];
+export const rankRow = (c) => [c.id, ...RANK_KEYS.map((k) => (k === "last_login" ? c.lastLogin ?? null : round(c.stats?.[k])))];
 
 /**
  * rank.json 생성

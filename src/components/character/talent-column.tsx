@@ -118,8 +118,8 @@ function Tree({ tree, points, ranks, classId }: { tree: TalentSpecTree; points: 
           // eslint-disable-next-line @next/next/no-img-element
           <img src={headIcon} alt="" className="h-7 w-7 rounded-[3px] border border-white/15" />
         )}
-        <span className="text-fl-base font-extrabold text-tx1 [text-shadow:0_1px_4px_rgba(0,0,0,.8)]">{tree.name}</span>
-        <span className={cn("ml-auto text-fl-sm font-bold", points > 0 ? "text-tx1" : "text-tx3")}>{points} pts</span>
+        <span className="text-fl-sm font-bold text-tx1 [text-shadow:0_1px_4px_rgba(0,0,0,.8)]">{tree.name}</span>
+        <span className={cn("ml-auto text-fl-2xs font-semibold", points > 0 ? "text-tx2" : "text-tx3")}>{points} pts</span>
       </div>
       <div className="relative mx-auto my-3" style={{ width: W, height: H }}>
         <Arrows nodes={tree.nodes} ranks={ranks} />
@@ -162,7 +162,7 @@ export function TalentColumn({ c }: { c?: CharacterDetail }) {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={cn("relative rounded-t px-2.5 pb-2 pt-1 text-fl-sm font-extrabold transition-colors", tab === t ? "text-tx1" : "text-tx3 hover:text-tx2")}
+            className={cn("relative rounded-t px-2.5 pb-2 pt-1 text-fl-sm font-bold transition-colors", tab === t ? "text-tx1" : "text-tx3 hover:text-tx2")}
           >
             {t === "active" ? "Active" : "Secondary"}
             {t === "active" && activeName && <span className="ml-1 text-fl-2xs font-semibold text-tx3">{activeName}</span>}

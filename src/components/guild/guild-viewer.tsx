@@ -143,7 +143,7 @@ export function GuildViewer() {
           </aside>
 
           {/* 뷰어 */}
-          <main className="no-scrollbar min-w-0 flex-1 overflow-y-auto px-[clamp(6px,1.4vw,28px)] py-[clamp(8px,1vw,20px)] [contain:layout_paint]">
+          <main className="no-scrollbar min-w-0 flex-1 overflow-y-auto px-[clamp(8px,2.5vw,48px)] py-[clamp(8px,1vw,20px)] [contain:layout_paint] lg:flex lg:flex-col lg:overflow-hidden">
             {error ? (
               <Center>데이터를 불러오지 못했습니다 · {error}</Center>
             ) : loading ? (
@@ -153,9 +153,10 @@ export function GuildViewer() {
             ) : member ? (
               <div
                 key={member.id}
-                className="anim-up mx-auto max-w-[clamp(1180px,84vw,1680px)] overflow-hidden rounded-lg border border-[var(--glass-border)] shadow-[0_25px_50px_-12px_rgba(0,0,0,.4)]"
+                style={{ maxWidth: 1152 }} /* 카드 최대 폭 — 넓은 화면에서 좌우로 늘어나지 않게 */
+                className="anim-up mx-auto w-full overflow-hidden rounded-lg lg:flex lg:min-h-0 lg:flex-1 lg:flex-col border border-[var(--glass-border)] shadow-[0_25px_50px_-12px_rgba(0,0,0,.4)]"
               >
-                <div className="glass-panel">
+                <div className="glass-panel shrink-0">
                   <CharacterHeader
                     name={member.name}
                     surname={member.surname}
@@ -175,7 +176,7 @@ export function GuildViewer() {
                   </div>
                 ) : (
                 /* WEB_PROJECT panel-left(2) / panel-center(3) / panel-right(2) */
-                <div className="grid grid-cols-1 gap-px bg-white/[.04] lg:grid-cols-[minmax(320px,2fr)_minmax(380px,2.3fr)] 2xl:grid-cols-[minmax(330px,2fr)_minmax(380px,2.3fr)_minmax(300px,2fr)]">
+                <div className="no-scrollbar grid grid-cols-1 gap-px bg-white/[.04] lg:min-h-0 lg:flex-1 lg:auto-rows-max lg:overflow-y-auto 2xl:auto-rows-auto 2xl:grid-rows-[minmax(0,1fr)] 2xl:overflow-hidden 2xl:[&>*]:min-h-0 lg:grid-cols-[minmax(261px,1.8fr)_minmax(342px,2.3fr)] 2xl:grid-cols-[minmax(270px,1.8fr)_minmax(342px,2.3fr)_minmax(243px,1.8fr)]">
                   <StatColumn c={detail ?? undefined} />
                   <GearColumn c={detail ?? undefined} />
                   <div className="relative h-[clamp(520px,64vh,800px)] lg:col-span-2 2xl:col-span-1 2xl:h-auto">

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
-import { CLASS_INFO, specsOf, type Member } from "@/lib/wow";
+import { CLASS_INFO, specsOf, timeAgo, type Member } from "@/lib/wow";
 import { cn } from "@/lib/utils";
 import type { RankStats } from "@/lib/use-rank-data";
 
@@ -11,7 +11,9 @@ import type { RankStats } from "@/lib/use-rank-data";
  * - 값: 로그아웃 시점 최종수치 (장비·특성 포함)
  * - 컬럼: 직업별 주요 스탯 (첫 컬럼 = 기본 정렬) · 헤더 클릭 정렬 · 공동 순위 · 30명/페이지
  * - 크기: 고정 px 대신 text-fl-* (화면 폭 비례) + em 단위 여백/아바타 → 화면이 커지면 표 전체가 같이 커짐
- * - 필터: 위쪽 가로 칩 (왼쪽 고정 폭 열 제거 → 표가 전체 폭 사용)
+ * - 필터: 모바일·태블릿 = 위쪽 가로 칩 / 데스크톱(lg↑) = 왼쪽 세로 사이드 (스크롤해도 따라옴)
+ * - 연출 (WEB_PROJECT stRowSlideIn): 직업·특성·정렬·페이지가 바뀔 때마다 행이 아래→위로 순차 등장
+ *   + 열별 최고값 = 직업 색 강조 / "기준" 열 = 마지막 접속 시각 (rank.json last_login)
  */
 type Col = { k: string; l: string };
 const L: Record<string, string> = {
@@ -94,6 +96,16 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
   const cur = Math.min(page, pages - 1);
   const view = rows.slice(cur * PAGE, cur * PAGE + PAGE);
   const color = CLASS_INFO[cls]?.color ?? "#aaa";
+  // 열별 최고값 (현재 필터 전체 기준, 페이지 무관)
+  const maxOf = useMemo(() => {
+    const o: Record<string, number> = {};
+    columns.forEach((c) => {
+      const vals = rows.map(({ m }) => stats.get(m.id)?.[c.k]).filter((v): v is number => v != null && v > 0);
+      if (vals.length > 1) o[c.k] = Math.max(...vals);
+    });
+    return o;
+  }, [rows, columns, stats]);
+  const animKey = `${cls}|${spec}|${sortKey}|${dir}|${cur}`; // 바뀌면 행 애니메이션 다시 재생
 
   const pickClass = (id: number) => { setCls(id); setSpec("all"); setSort(null); setPage(0); };
   const pickSort = (k: string) => {
@@ -104,14 +116,14 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
     on ? (dir === "desc" ? <ChevronDown className="h-[.9em] w-[.9em]" /> : <ChevronUp className="h-[.9em] w-[.9em]" />) : null;
 
   return (
-    <div className="flex flex-col gap-[clamp(10px,1vw,18px)]">
-      {/* 필터: 위쪽 가로 칩 (줄바꿈) */}
-      <div className="flex flex-col gap-[clamp(6px,.6vw,10px)]">
+    <div className="flex flex-col gap-[clamp(10px,1vw,18px)] lg:flex-row lg:items-start">
+      {/* 필터: 모바일 = 위쪽 가로 칩 / lg↑ = 왼쪽 세로 사이드 (sticky) */}
+      <aside className="flex flex-col gap-[clamp(6px,.6vw,10px)] lg:sticky lg:top-0 lg:w-[clamp(170px,11vw,220px)] lg:shrink-0 lg:gap-[clamp(14px,1.2vw,22px)]">
         <ChipRow title="클래스">
           {classes.map((id) => {
             const c = CLASS_INFO[id];
             return (
-              <Chip key={id} on={id === cls} color={c.color} onClick={() => pickClass(id)} strong>
+              <Chip key={id} on={id === cls} color={c.color} onClick={() => pickClass(id)} strong count={counts.get(id)}>
                 {c.name}
               </Chip>
             );
@@ -124,7 +136,9 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
             </Chip>
           ))}
         </ChipRow>
-      </div>
+      </aside>
+
+      <div className="flex min-w-0 flex-1 flex-col gap-[clamp(10px,1vw,18px)]">
 
       {/* 표 */}
       <div className="no-scrollbar overflow-x-auto rounded-lg border border-white/[.06]">
@@ -136,6 +150,9 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
               </th>
               <th className={cn("sticky z-[1] bg-[#11131b] text-left font-bold text-white", NAME_LEFT, CELL)}>
                 <span className="text-[.88em]">캐릭터</span>
+              </th>
+              <th className={cn("whitespace-nowrap text-center font-bold text-white", CELL)}>
+                <span className="text-[.88em]">기준</span>
               </th>
               {[{ k: "level", l: "Lv" }, ...columns].map((c) => {
                 const on = c.k === sortKey;
@@ -153,12 +170,17 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
               })}
             </tr>
           </thead>
-          <tbody>
-            {view.map(({ m, rank }) => {
+          <tbody key={animKey}>
+            {view.map(({ m, rank }, i) => {
               const s = stats.get(m.id);
               const top3 = rank != null && rank <= 3 && dir === "desc";
               return (
-                <tr key={m.id} onClick={() => onPick(m)} className="group cursor-pointer border-b border-white/[.04] transition-colors hover:bg-white/[.05]">
+                <tr
+                  key={m.id}
+                  onClick={() => onPick(m)}
+                  className="group cursor-pointer border-b border-white/[.04] transition-colors hover:bg-white/[.05] motion-safe:animate-[stRowSlideIn_.8s_ease_both]"
+                  style={{ animationDelay: `${i * 0.04}s` }}
+                >
                   <td className={cn("sticky left-0 bg-[#0f1118] text-center group-hover:bg-[#171a23]", RANK_W, CELL)} style={top3 ? { boxShadow: `inset 3px 0 0 ${["#f7cd4f", "#c9d3df", "#d89d62"][rank - 1]}` } : undefined}>
                     <span className={cn("inline-flex h-[1.9em] min-w-[1.9em] items-center justify-center rounded-md px-[.25em] font-black tabular-nums", top3 ? `medal medal-${rank}` : "text-white")}>
                       {rank ?? "-"}
@@ -173,19 +195,28 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
                         <span className="flex h-[2.1em] w-[2.1em] shrink-0 items-center justify-center rounded-full border text-[.85em] font-bold" style={{ borderColor: `${color}66`, color }}>{m.name[0]}</span>
                       )}
                       <div className="flex min-w-0 flex-col leading-tight">
-                        <span className="max-w-[7.5em] truncate font-bold text-white md:max-w-[11em]" title={`${m.name} ${m.surname}`}>{m.name} {m.surname}</span>
+                        <span className="max-w-[7.5em] truncate whitespace-nowrap font-bold text-white md:max-w-none md:overflow-visible" title={`${m.name} ${m.surname}`}>{m.name} {m.surname}</span>
                         <span className="text-[.8em] text-white/60">{m.spec ?? "알 수 없음"}</span>
                       </div>
                     </div>
+                  </td>
+                  <td className={cn("whitespace-nowrap text-center text-[.78em] leading-[1.6] text-white/45", CELL)}>
+                    {s?.last_login ? timeAgo(s.last_login) : "-"}
                   </td>
                   <td className={cn("text-center tabular-nums text-white", CELL, sortKey === "level" && "font-extrabold")}>
                     {m.level}
                   </td>
                   {columns.map((c) => {
                     const on = c.k === sortKey;
+                    const v = s?.[c.k] ?? null;
+                    const isMax = v != null && v === maxOf[c.k]; // 열 최고값 = 직업 색 강조 (WEB_PROJECT)
                     return (
-                      <td key={c.k} className={cn("whitespace-nowrap text-center tabular-nums text-white", CELL, on && "font-extrabold")}>
-                        {fmt(c.k, s?.[c.k] ?? null)}
+                      <td
+                        key={c.k}
+                        className={cn("whitespace-nowrap text-center tabular-nums text-white", CELL, on && "bg-white/[.03] font-extrabold", isMax && "font-extrabold")}
+                        style={isMax ? { color, backgroundColor: `${color}18`, outline: `1px solid ${color}33`, outlineOffset: "-1px" } : undefined}
+                      >
+                        {fmt(c.k, v)}
                       </td>
                     );
                   })}
@@ -193,7 +224,7 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
               );
             })}
             {!view.length && (
-              <tr><td colSpan={columns.length + 3} className="py-10 text-center text-fl-sm text-white/60">해당 조건의 길드원이 없습니다</td></tr>
+              <tr><td colSpan={columns.length + 4} className="py-10 text-center text-fl-sm text-white/60">해당 조건의 길드원이 없습니다</td></tr>
             )}
           </tbody>
         </table>
@@ -209,31 +240,33 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
           <PageBtn disabled={cur === pages - 1} onClick={() => setPage(cur + 1)}><ChevronRight className="h-[1.1em] w-[1.1em]" /></PageBtn>
         </div>
       )}
+      </div>
     </div>
   );
 }
 
 function ChipRow({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-start gap-[.75em] text-fl-sm">
-      <span className="shrink-0 pt-[.45em] text-[.82em] font-extrabold tracking-[1.2px] text-white/60">{title}</span>
-      <div className="flex flex-wrap gap-[.35em]">{children}</div>
+    <div className="flex items-start gap-[.75em] text-fl-sm lg:flex-col lg:gap-[.5em]">
+      <span className="shrink-0 pt-[.45em] text-[.82em] font-extrabold tracking-[1.2px] text-white/60 lg:pt-0">{title}</span>
+      <div className="flex flex-wrap gap-[.35em] lg:w-full lg:flex-col lg:gap-[.3em]">{children}</div>
     </div>
   );
 }
 
-function Chip({ on, color, strong, onClick, children }: { on: boolean; color: string; strong?: boolean; onClick: () => void; children: React.ReactNode }) {
+function Chip({ on, color, strong, count, onClick, children }: { on: boolean; color: string; strong?: boolean; count?: number; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
       onClick={onClick}
       style={on ? { color, borderColor: color, backgroundColor: `${color}24` } : undefined}
       className={cn(
-        "rounded-md border px-[.85em] py-[.35em] text-center transition-colors",
+        "rounded-md border px-[.85em] py-[.35em] text-center transition-colors lg:flex lg:w-full lg:items-center lg:justify-between lg:py-[.45em] lg:text-left",
         strong ? "font-extrabold" : "font-bold",
         !on && "border-white/15 text-white hover:bg-white/[.08]"
       )}
     >
       {children}
+      {count != null && <span className="hidden text-[.85em] font-semibold tabular-nums opacity-60 lg:inline">{count}</span>}
     </button>
   );
 }

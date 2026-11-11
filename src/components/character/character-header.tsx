@@ -37,7 +37,7 @@ export function CharacterHeader({ name, surname, level, classId, specName, avata
 
       <div className="anim-up min-w-0">
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display shrink-0 text-fl-sm font-bold text-tx2">LV.{level}</span>
+          <span className="font-display shrink-0 text-fl-base font-bold text-tx3">LV.{level}</span>
           <span className="truncate text-[clamp(22px,1rem+1vw,38px)] font-extrabold leading-none tracking-[-.5px] text-tx1">{name} {surname}</span>
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
@@ -67,7 +67,7 @@ export function CharacterHeader({ name, surname, level, classId, specName, avata
             </a>
           )}
           {lastLogin && (
-            <span className="ml-1.5 flex items-center gap-1 text-fl-xs font-semibold text-tx2">
+            <span className="ml-1.5 flex items-center gap-1 text-fl-2xs font-semibold text-tx3">
               <Clock className="h-[1em] w-[1em]" />
               {timeAgo(lastLogin)}
             </span>

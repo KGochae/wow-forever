@@ -7,6 +7,7 @@ import { useItemTooltip } from "@/components/common/item-tooltip";
 import { useMounted } from "@/components/common/use-mounted";
 import { classColor, num, type CharacterDetail } from "@/lib/wow";
 import { fmtStat, statPages, type StatDef } from "@/lib/stats-config";
+import { ProfessionSection } from "@/components/character/profession-section";
 
 type Mode = "effective" | "base";
 
@@ -14,19 +15,19 @@ type Mode = "effective" | "base";
 function SectionTitle({ children, right }: { children: React.ReactNode; right?: React.ReactNode }) {
   return (
     <div className="mb-2.5 flex items-center justify-between gap-2">
-      <span className="truncate text-fl-xs font-extrabold uppercase tracking-[1.5px] text-tx1">{children}</span>
+      <span className="truncate text-fl-2xs font-extrabold uppercase tracking-[1.8px] text-white">{children}</span>
       {right}
     </div>
   );
 }
 
-/** WEB_PROJECT .stat-card */
+/** 요약 카드 — WEB_PROJECT .stat-card / .stat-card-label(12px) / .stat-card-val(20px) / .stat-card-sub(12px) 그대로 */
 function Card({ label, value, sub, delay = 0 }: { label: string; value: string; sub?: React.ReactNode; delay?: number }) {
   return (
-    <div className="anim-count rounded-[5px] border border-line bg-bg3 px-2.5 py-2" style={{ animationDelay: `${delay}ms` }}>
-      <div className="mb-0.5 truncate text-fl-xs font-bold tracking-[1px] text-tx2">{label}</div>
-      <div className="text-fl-lg font-extrabold tracking-[-.5px] text-tx">{value}</div>
-      {sub && <div className="mt-0.5 text-fl-xs text-tx3">{sub}</div>}
+    <div className="anim-count rounded-[5px] border border-line bg-bg3 px-[10px] py-2" style={{ animationDelay: `${delay}ms` }}>
+      <div className="mb-[2px] truncate text-[12px] font-bold tracking-[1px] text-tx2">{label}</div>
+      <div className="text-[20px] font-extrabold tracking-[-.5px] text-tx">{value}</div>
+      {sub && <div className="mt-[2px] text-[12px] text-tx3">{sub}</div>}
     </div>
   );
 }
@@ -73,7 +74,7 @@ function StatRow({ def, c, mode, color, max, on }: { def: StatDef; c: CharacterD
 
   return (
     <div className="mb-[9px] flex items-center gap-2 last:mb-0">
-      <span className="w-[6.6em] shrink-0 truncate text-fl-xs font-bold text-tx2">{def.l}</span>
+      <span className="w-[6.8em] shrink-0 truncate text-fl-xs font-medium text-tx2">{def.l}</span>
       <div data-stat-bar={def.k} className="relative -my-1.5 flex min-w-0 flex-1 items-center py-1.5">
         {/* 늘어난 구간(초록)만 hover — 막대가 8px로 얇아 투명 영역으로 위아래를 넓힘 */}
         {bonusW > 0 && (
@@ -94,7 +95,7 @@ function StatRow({ def, c, mode, color, max, on }: { def: StatDef; c: CharacterD
           />
         </div>
       </div>
-      <span className="w-[4.2em] shrink-0 text-right text-fl-sm font-bold tabular-nums" style={{ color: v ? "var(--text)" : "var(--text3)" }}>
+      <span className="w-[4.6em] shrink-0 text-right text-fl-sm font-bold tabular-nums" style={{ color: v ? "var(--text)" : "var(--text3)" }}>
         {fmtStat(v, def.f)}
       </span>
     </div>
@@ -172,13 +173,13 @@ function StatPager({ c }: { c: CharacterDetail }) {
       </SectionTitle>
 
       {/* 페이지 탭 (점 대신 이름 칩) */}
-      <div className="no-scrollbar mb-3 flex gap-1 overflow-x-auto">
+      <div className="mb-3 flex flex-wrap gap-1">
         {pages.map((p, i) => (
           <button
             key={p.key}
             onClick={() => setIdx(i)}
             className={cn(
-              "shrink-0 rounded-full border px-2 py-[2px] text-fl-2xs font-bold transition-colors",
+              "shrink-0 rounded-md border px-[.6em] py-[.15em] text-fl-2xs font-semibold leading-[1.5] transition-colors",
               i === idx ? "text-[#0a0b12]" : "border-line2 text-tx3 hover:text-tx2"
             )}
             style={i === idx ? { background: col, borderColor: col } : undefined}
@@ -240,7 +241,6 @@ export function StatColumn({ c }: { c?: CharacterDetail }) {
   });
   const caster = [5, 8, 9].includes(c.classId);
   const hp = num(s, "health"), pw = num(s, "power"), main = num(s, caster ? "spell_power" : "attack_power"), ar = num(s, "armor_effective");
-  const armorBonus = (ar ?? 0) - (baseNum(s, "armor_base") ?? 0);
 
   return (
     <div className="glass-panel no-scrollbar min-w-0 overflow-y-auto">
@@ -251,8 +251,7 @@ export function StatColumn({ c }: { c?: CharacterDetail }) {
           <Card label="생명력" value={fmtStat(hp)} />
           <Card label={String(s.power_type ?? "자원")} value={fmtStat(pw)} delay={40} />
           <Card label={caster ? "주문력" : "전투력"} value={fmtStat(main)} delay={80} />
-          <Card label="방어도" value={fmtStat(ar)} delay={120}
-            sub={armorBonus > 0 ? <span className="text-[var(--green)]">+{armorBonus}</span> : undefined} />
+          <Card label="방어도" value={fmtStat(ar)} delay={120} />
         </div>
       </section>
 
@@ -264,12 +263,12 @@ export function StatColumn({ c }: { c?: CharacterDetail }) {
               const dps = num(s, `${k}_dps`), mn = num(s, `${k}_damage_min`), mx = num(s, `${k}_damage_max`), sp = num(s, `${k}_speed`);
               return (
                 <div key={k} className="anim-count rounded-[5px] border border-line bg-bg3 px-2.5 py-2" style={{ animationDelay: `${i * 50}ms` }}>
-                  <div className="text-fl-2xs font-bold uppercase tracking-[1px] text-tx3">{k === "main_hand" ? "Main Hand" : "Off Hand"}</div>
+                  <div className="text-fl-2xs font-bold uppercase tracking-[1.5px] text-tx3">{k === "main_hand" ? "Main Hand" : "Off Hand"}</div>
                   <div className="flex items-baseline justify-between">
-                    <span className="text-fl-xl font-extrabold tracking-[-.5px] text-[#ffa53a]">{dps ? dps.toFixed(1) : "—"}</span>
+                    <span className="text-fl-lg font-extrabold tracking-[-.5px] text-[#ffa53a]">{dps ? dps.toFixed(1) : "—"}</span>
                     <span className="text-fl-2xs font-bold text-tx3">DPS</span>
                   </div>
-                  <div className="text-fl-xs text-tx3">{dps ? `${Math.round(mn ?? 0)}~${Math.round(mx ?? 0)} · ${sp}s` : "미착용"}</div>
+                  <div className="text-fl-2xs text-tx3">{dps ? `${Math.round(mn ?? 0)}~${Math.round(mx ?? 0)} · ${sp}s` : "미착용"}</div>
                 </div>
               );
             })}
@@ -278,6 +277,7 @@ export function StatColumn({ c }: { c?: CharacterDetail }) {
       )}
 
       <StatPager key={c.id} c={c} />
+      <ProfessionSection list={c.professions} />
 
     </div>
   );
@@ -285,9 +285,11 @@ export function StatColumn({ c }: { c?: CharacterDetail }) {
 
 const DEBUFF_HELP = "로그아웃할 때 부활 후유증이나 디버프가 걸려 있어 일부 능력치가 기본 수치보다 낮게 수집될 수 있습니다. ";
 
+/** 부활 후유증·디버프 안내 — 해당 캐릭터일 때만 능력치 열 맨 위에 표시 */
+/** 열 제목 "능력치" + 부활 후유증·디버프 배지 */
 function PanelHd({ debuffed = false }: { debuffed?: boolean }) {
   return (
-    <div className="flex h-10 items-center justify-between gap-2 border-b border-line px-4 text-fl-xs font-extrabold text-tx1">
+    <div className="flex h-10 items-center justify-between gap-2 border-b border-line px-4 text-fl-sm font-bold text-tx1">
       능력치
       {debuffed && (
         <span tabIndex={0} aria-label={`부활 후유증 및 디버프. ${DEBUFF_HELP}`} className="group relative inline-flex shrink-0 cursor-help items-center gap-1 rounded-full border border-red-400/40 bg-red-500/10 px-2 py-[3px] text-fl-2xs font-bold text-[var(--red)] outline-none">

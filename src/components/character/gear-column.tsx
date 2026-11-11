@@ -3,7 +3,7 @@
 import { HelpCircle } from "lucide-react";
 import { useItemTooltip } from "@/components/common/item-tooltip";
 import { ModelViewer } from "@/components/character/model-viewer";
-import { classColor, iconUrl, num, professionTier, type CharacterDetail, type EquipItem, type Profession } from "@/lib/wow";
+import { classColor, iconUrl, num, type CharacterDetail, type EquipItem } from "@/lib/wow";
 
 // WEB_PROJECT 배치: 왼쪽 / 오른쪽 / 하단 무기
 const LEFT = ["HEAD", "NECK", "SHOULDER", "BACK", "CHEST", "SHIRT", "TABARD", "WRIST"];
@@ -69,8 +69,8 @@ function Radar({ values, color }: { values: { label: string; v: number }[]; colo
 
 function Card({ label, value, help }: { label: string; value: React.ReactNode; help?: string }) {
   return (
-    <div className="anim-count relative flex flex-1 flex-col justify-center rounded-[5px] border border-line bg-bg3 px-2.5 py-2">
-      <div className="mb-0.5 flex items-center gap-1 text-fl-xs font-bold tracking-[1px] text-tx2">
+    <div className="anim-count relative flex flex-1 flex-col justify-center rounded-[5px] border border-line bg-bg3 px-[10px] py-2">
+      <div className="mb-[2px] flex items-center gap-1 text-[12px] font-bold tracking-[1px] text-tx2">
         {label}
         {help && (
           <span tabIndex={0} aria-label={help} className="group relative inline-flex cursor-help rounded-full outline-none">
@@ -81,7 +81,7 @@ function Card({ label, value, help }: { label: string; value: React.ReactNode; h
           </span>
         )}
       </div>
-      <div className="text-fl-lg font-extrabold tracking-[-.5px] text-tx">{value}</div>
+      <div className="text-[20px] font-extrabold tracking-[-.5px] text-tx">{value}</div>
     </div>
   );
 }
@@ -104,16 +104,16 @@ export function GearColumn({ c }: { c?: CharacterDetail }) {
 
   return (
     <div className="glass-panel no-scrollbar min-w-0 overflow-y-auto px-2.5 pb-4">
-      <div className="-mx-2.5 flex h-10 items-center border-b border-line px-4 text-fl-xs font-extrabold text-tx1">캐릭터</div>
+      <div className="-mx-2.5 flex h-10 items-center border-b border-line px-4 text-fl-sm font-bold text-tx1">캐릭터</div>
 
-      <div className="mt-3 grid grid-cols-[clamp(130px,10vw,210px)_1fr] gap-[5px]">
+      <div className="mt-3 grid grid-cols-[150px_1fr] gap-[5px]">
         <div className="flex flex-col gap-[5px]">
           <Card label="아이템 평균 레벨" value={c?.avgIlvl ?? "—"} />
           <Card label="기어스코어" value="—" help="Forever 산식 확정 후 측정 예정" />
         </div>
-        <div className="rounded-[5px] border border-line bg-bg3 px-2 py-2">
-          <div className="text-fl-xs font-bold tracking-[1px] text-tx2">장비 스탯</div>
-          <div key={c?.id} className="h-[clamp(120px,9vw,190px)]"><Radar values={radar} color={col} /></div>
+        <div className="rounded-[5px] border border-line bg-bg3 px-[10px] py-2">
+          <div className="text-[12px] font-bold tracking-[1px] text-tx2">장비 스탯</div>
+          <div key={c?.id} className="h-[120px]"><Radar values={radar} color={col} /></div>
         </div>
       </div>
 
@@ -127,67 +127,9 @@ export function GearColumn({ c }: { c?: CharacterDetail }) {
           {RIGHT.map((k, i) => <Slot key={k} item={bySlot.get(k)} delay={i * 25 + 12} />)}
         </div>
       </div>
-      <div className="mt-3 flex justify-center gap-12">
+      <div className="mt-3 flex justify-center gap-[9px]">
         {BOTTOM.map((k, i) => <Slot key={k} item={bySlot.get(k)} delay={220 + i * 30} />)}
       </div>
-
-      {/* 전문 기술 · 완료한 퀘스트 */}
-      <div className="mt-4 grid gap-[5px] sm:grid-cols-[1fr_clamp(120px,9vw,180px)]">
-        <ProfessionCard list={c?.professions} />
-        <div className="anim-count flex flex-col justify-center rounded-[5px] border border-line bg-bg3 px-2.5 py-2">
-          <div className="mb-0.5 text-fl-xs font-bold tracking-[1px] text-tx2">완료한 퀘스트</div>
-          <div className="text-fl-lg font-extrabold tracking-[-.5px] text-tx">
-            {c?.questsCompleted != null ? <>{c.questsCompleted.toLocaleString()}<span className="ml-0.5 text-fl-xs font-bold text-tx3">개</span></> : "—"}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** 전문 기술 — 공식 아이콘 + 숙련도 막대 (주 전문기술 먼저, 보조는 아래) */
-function ProfessionCard({ list }: { list?: Profession[] | null }) {
-  return (
-    <div className="anim-count rounded-[5px] border border-line bg-bg3 px-2.5 py-2">
-      <div className="mb-2 text-fl-xs font-bold tracking-[1px] text-tx2">전문 기술</div>
-      {!list?.length ? (
-        <div className="py-2 text-fl-xs text-tx3">
-          {list === undefined ? "다음 수집 때 표시됩니다" : list === null ? "정보를 불러오지 못했습니다" : "배운 전문 기술이 없습니다"}
-        </div>
-      ) : (
-        <div className="flex flex-col gap-[.55em] text-fl-xs">
-          {list.map((p) => {
-            const pct = p.max ? Math.min(100, (p.skill / p.max) * 100) : 0;
-            return (
-              <div key={p.id} className="flex items-center gap-[.7em]">
-                {p.icon ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={p.icon} alt={p.name} title={p.name} loading="lazy" className="h-[2.6em] w-[2.6em] shrink-0 rounded-[4px] border border-white/20 shadow-[0_1px_4px_rgba(0,0,0,.5)]" />
-                ) : (
-                  <span className="flex h-[2.6em] w-[2.6em] shrink-0 items-center justify-center rounded-[4px] border border-white/15 font-bold text-tx3">{p.name[0]}</span>
-                )}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <span className="truncate font-bold text-tx1">
-                      {p.name}
-                      <span className="ml-1.5 text-[.85em] font-semibold text-tx3">{p.secondary ? "보조 · " : ""}{professionTier(p.max)}</span>
-                    </span>
-                    <span className="shrink-0 font-bold tabular-nums text-tx">
-                      {p.skill}<span className="text-tx3"> / {p.max}</span>
-                    </span>
-                  </div>
-                  <div className="mt-[.35em] h-[5px] overflow-hidden rounded-full bg-white/[.08]">
-                    <div
-                      className="h-full rounded-full"
-                      style={{ width: `${pct}%`, background: p.secondary ? "linear-gradient(90deg,#5b7a99,#8fb3d9)" : "linear-gradient(90deg,#b8862e,#f2c75c)" }}
-                    />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
     </div>
   );
 }

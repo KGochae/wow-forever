@@ -40,7 +40,7 @@ export function TopNav({ active, onTab, members, onPick, onMembers }: Props) {
         onClick={() => onTab(key)}
         className={cn(
           "relative flex shrink-0 items-center justify-center gap-[.3em] font-bold tracking-[.3px] transition-colors",
-          mobile ? "h-full flex-1 text-fl-sm" : "rounded px-[.7em] py-[.3em] text-fl-base",
+          mobile ? "h-full flex-1 text-fl-sm" : "rounded px-[.7em] py-[.3em] text-fl-sm",
           active === key ? "text-white" : "text-tx3 hover:text-tx2"
         )}
       >

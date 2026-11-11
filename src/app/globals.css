@@ -67,13 +67,14 @@
   --font-sans: var(--font-sans);
   --font-display: var(--font-display);
 
-  /* 화면 폭에 따라 자동으로 커지는 글자 크기 (text-fl-*) — 375px 모바일 ~ 1440px+ 데스크톱 */
-  --text-fl-2xs: clamp(11.5px, 0.6rem + 0.3vw, 14px);
-  --text-fl-xs: clamp(12.5px, 0.65rem + 0.35vw, 15.5px);
-  --text-fl-sm: clamp(13.5px, 0.7rem + 0.42vw, 17px);
-  --text-fl-base: clamp(14.5px, 0.72rem + 0.5vw, 19px);
-  --text-fl-lg: clamp(16px, 0.8rem + 0.6vw, 22px);
-  --text-fl-xl: clamp(18px, 0.9rem + 0.75vw, 26px);
+  /* 화면 폭에 따라 자동으로 커지는 글자 크기 (text-fl-*) — 375px 모바일 ~ 1440px+ 데스크톱
+     단계 간 차이를 크게(데스크톱 12.5 / 14 / 16 / 18.5 / 24 / 30) → 캡션·라벨·수치 위계가 눈에 띄도록 */
+  --text-fl-2xs: clamp(11px, 0.6rem + 0.2vw, 12.5px);
+  --text-fl-xs: clamp(12px, 0.66rem + 0.25vw, 14px);
+  --text-fl-sm: clamp(13.5px, 0.72rem + 0.32vw, 16px);
+  --text-fl-base: clamp(15px, 0.8rem + 0.42vw, 18.5px);
+  --text-fl-lg: clamp(18px, 0.95rem + 0.6vw, 24px);
+  --text-fl-xl: clamp(22px, 1.1rem + 0.8vw, 30px);
 }
 
 @layer base {
@@ -108,6 +109,8 @@
 @keyframes imgFadeIn { from { opacity: 0; transform: scale(1.03) } to { opacity: 1; transform: scale(1) } }
 @keyframes sidebarIn { from { opacity: 0; transform: translateX(-8px) } to { opacity: 1; transform: none } }
 @keyframes radarIn { from { opacity: 0; transform: scale(0.55) } to { opacity: 1; transform: scale(1) } }
+@keyframes barGrow { from { transform: scaleX(0) } to { transform: scaleX(1) } }
+@keyframes stRowSlideIn { from { opacity: 0; transform: translateY(24px) } to { opacity: 1; transform: none } }
 @keyframes rowIn { from { opacity: 0; transform: translateX(-6px) } to { opacity: 1; transform: none } }
 @keyframes sp { to { transform: rotate(360deg) } }
 @keyframes ttIn { from { opacity: 0; transform: translateY(4px) } to { opacity: 1; transform: none } }

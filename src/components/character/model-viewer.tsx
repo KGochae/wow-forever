@@ -145,7 +145,7 @@ export function ModelViewer({ c }: { c?: CharacterDetail }) {
   return (
     <div
       ref={wrap}
-      className="relative h-[clamp(340px,30vw,580px)] min-w-0 flex-1 overflow-hidden rounded bg-cover bg-center shadow-[0_2px_12px_rgba(0,0,0,.5)] transition-[background-image] duration-500"
+      className="relative h-[calc(var(--slot)*8+63px)] w-[calc((var(--slot)*3+6rem)*1.5)] min-w-0 shrink overflow-hidden rounded bg-cover bg-center shadow-[0_2px_12px_rgba(0,0,0,.5)] transition-[background-image] duration-500"
       style={bg ? { backgroundImage: `linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.72)), url('${bg}')` } : undefined}
     >
       <div id={hostId} className={cn("absolute inset-0", show2d && "invisible")} />

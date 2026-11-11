@@ -10,6 +10,10 @@ import { useGuildIndex } from "@/lib/use-guild-data";
 import { TopNav } from "@/components/layout/top-nav";
 import { ClassTreemap, LevelDistChart } from "@/components/stats/level-charts";
 import { StatLeaderboard } from "@/components/stats/stat-leaderboard";
+import { ActivityBars } from "@/components/stats/activity-card";
+
+/** 접속 현황 카드 — 접속 시각(rank.json last_login) 수집 전까지 숨김. 다시 보이려면 true */
+const SHOW_ACTIVITY = false;
 import { useRankData } from "@/lib/use-rank-data";
 
 /**
@@ -130,6 +134,17 @@ export function GuildStatsDashboard() {
               </div>
             </Card>
           </div>
+          {SHOW_ACTIVITY && <Card
+            eyebrow="Activity"
+            title="접속 현황"
+            note={selLabel ? `${selLabel} ${selected?.length ?? 0}명` : `전체 ${total}명`}
+          >
+            {rank ? (
+              <ActivityBars members={selected ?? members} stats={rank.stats} color={c?.color} />
+            ) : (
+              <div className="flex h-40 items-center justify-center"><div className="spin" /></div>
+            )}
+          </Card>}
           </div>
         )}
       </main>
