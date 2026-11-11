@@ -47,6 +47,9 @@ export function GuildStatsDashboard() {
 
   const specs = cls != null ? specsOf(cls) : [];
   const hasUnknown = cls != null && members.some((m) => m.classId === cls && (!m.spec || !specs.includes(m.spec)));
+  // 특성 칩 인원 (선택한 직업 안에서)
+  const specCount = (k: string) =>
+    members.filter((m) => m.classId === cls && (k === "all" || (k === "none" ? !m.spec || !specs.includes(m.spec) : m.spec === k))).length;
   const selected = useMemo(() => {
     if (cls == null) return null;
     return members.filter((m) => m.classId === cls && (spec === "all" || (spec === "none" ? !m.spec || !specs.includes(m.spec) : m.spec === spec)));
@@ -126,6 +129,7 @@ export function GuildStatsDashboard() {
                       )}
                     >
                       {l}
+                      <span className="ml-[.45em] text-[.85em] font-semibold tabular-nums opacity-60">{specCount(k)}</span>
                     </button>
                   ))}
                 </div>

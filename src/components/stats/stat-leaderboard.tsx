@@ -72,6 +72,9 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
   const specs = specsOf(cls);
   const inClass = members.filter((m) => m.classId === cls && stats.has(m.id));
   const hasUnknown = inClass.some((m) => !m.spec || !specs.includes(m.spec));
+  // 특성별 인원 (all = 직업 전체, none = 특성 정보 없음)
+  const specCount = (k: string) =>
+    k === "all" ? inClass.length : inClass.filter((m) => (k === "none" ? !m.spec || !specs.includes(m.spec) : m.spec === k)).length;
 
   const rows = useMemo(() => {
     const list = inClass.filter((m) => spec === "all" || (spec === "none" ? !m.spec || !specs.includes(m.spec) : m.spec === spec));
@@ -159,7 +162,7 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
         </ChipRow>
         <ChipRow title="특성" key={cls}>
           {[{ k: "all", l: "전체" }, ...specs.map((s) => ({ k: s, l: s })), ...(hasUnknown ? [{ k: "none", l: "알 수 없음" }] : [])].map(({ k, l }) => (
-            <Chip key={k} on={spec === k} color={color} onClick={() => { setSpec(k); setPage(0); }}>
+            <Chip key={k} on={spec === k} color={color} count={specCount(k)} onClick={() => { setSpec(k); setPage(0); }}>
               {l}
             </Chip>
           ))}
@@ -307,7 +310,7 @@ function Chip({ on, color, strong, count, onClick, children }: { on: boolean; co
       )}
     >
       {children}
-      {count != null && <span className="hidden text-[.85em] font-semibold tabular-nums opacity-60 lg:inline">{count}</span>}
+      {count != null && <span className="ml-[.45em] text-[.85em] font-semibold tabular-nums opacity-60 lg:ml-0">{count}</span>}
     </button>
   );
 }
