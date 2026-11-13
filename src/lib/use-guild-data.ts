@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { CharacterDetail, ClassTalents, Member } from "@/lib/wow";
 import { API_BASE, DATA_BASE } from "@/lib/config";
+import { avatarThumb } from "@/lib/avatar";
 
 /**
  * 데이터 로딩 전략 (경량화)
@@ -22,7 +23,7 @@ function loadIndex() {
   indexPromise ??= fetch(`${DATA_BASE}/index.json`, { cache: "no-cache" }).then((r) => {
     if (!r.ok) throw new Error(`index.json ${r.status}`);
     return r.json() as Promise<GuildIndex>;
-  });
+  }).then((d) => ({ ...d, members: d.members.map((m) => ({ ...m, avatar: avatarThumb(m.avatar) })) }));
   indexPromise.catch(() => { indexPromise = null; });
   return indexPromise;
 }
@@ -41,7 +42,8 @@ export function useGuildIndex() {
 const charCache = new Map<number, Promise<CharacterDetail | null>>();
 export function loadCharacter(id: number) {
   if (!charCache.has(id)) {
-    const p = fetch(`${DATA_BASE}/chars/${id}.json`).then((r) => (r.ok ? (r.json() as Promise<CharacterDetail>) : null));
+    const p = fetch(`${DATA_BASE}/chars/${id}.json`).then((r) => (r.ok ? (r.json() as Promise<CharacterDetail>) : null))
+      .then((c) => (c ? { ...c, avatar: avatarThumb(c.avatar) } : null));
     p.catch(() => charCache.delete(id));
     charCache.set(id, p);
   }
@@ -66,7 +68,8 @@ export async function refreshCharacter(id: number, slug: string): Promise<Refres
     if (r.status === 429) return { ok: false, reason: "error", message: "요청이 너무 많습니다. 잠시 후 다시 시도하세요" };
     if (r.status === 409) return { ok: false, reason: "error", message: "이름이 바뀐 캐릭터입니다 (다음 정기 수집 후 반영)" };
     if (!r.ok || !j.ok) return { ok: false, reason: "error", message: j.status === 404 || r.status === 404 ? "블리자드에서 조회되지 않습니다 (로그아웃 후 반영)" : "갱신 실패" };
-    const c = j.character as CharacterDetail;
+    const raw = j.character as CharacterDetail;
+    const c = { ...raw, avatar: avatarThumb(raw.avatar) };
     charCache.set(c.id, Promise.resolve(c));
     charListeners.forEach((f) => f(c.id, c));
     return { ok: true, character: c };

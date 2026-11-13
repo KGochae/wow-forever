@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Clock, HelpCircle, RefreshCw, Shield } from "lucide-react";
 import { CLASS_INFO, specsOf, type Member } from "@/lib/wow";
 import { cn } from "@/lib/utils";
-import { FAN_NOTICE } from "@/lib/config";
+import { FAN_NOTICE, RAID_ENABLED } from "@/lib/config";
 import { useGuildIndex } from "@/lib/use-guild-data";
 import { TopNav } from "@/components/layout/top-nav";
 import { ClassTreemap, LevelDistChart } from "@/components/stats/level-charts";
@@ -67,7 +67,7 @@ export function GuildStatsDashboard() {
     setSpec("all");
   };
   const pick = (m: Member) => router.push(`/viewer?id=${m.id}`);
-  const onTab = (k: string) => k !== "stats" && router.push(k === "raid" ? "/viewer?tab=raid" : "/viewer");
+  const onTab = (k: string) => k !== "stats" && (k !== "raid" || RAID_ENABLED) && router.push(k === "raid" ? "/viewer?tab=raid" : "/viewer");
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
@@ -176,7 +176,7 @@ function countBy(ms: Member[]) {
  */
 function Card({ eyebrow, title, titleExtra, note, children }: { eyebrow?: string; title: string; titleExtra?: React.ReactNode; note?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section className="relative flex flex-col overflow-hidden rounded-xl border border-white/[.07] bg-[rgba(10,12,18,.72)] backdrop-blur-md">
+    <section className="relative flex flex-col overflow-hidden rounded-xl border border-white/[.07] bg-[rgba(10,12,18,.9)]">
       {/* 상단 하이라이트 라인 */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
       <header className="flex shrink-0 flex-wrap items-end justify-between gap-x-4 gap-y-2 border-b border-white/[.06] px-[clamp(14px,1.4vw,28px)] pb-[clamp(10px,.9vw,16px)] pt-[clamp(12px,1.1vw,20px)]">

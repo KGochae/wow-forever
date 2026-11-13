@@ -11,6 +11,7 @@
 // 변수: REGION · ALLOWED_ORIGINS(쉼표 구분) · REFRESH_COOLDOWN_SEC · REFRESH_IP_PER_HOUR · GH_REPO · GH_WORKFLOW · GH_REF
 import { createBnet, NS } from "../../collector/lib/bnet.mjs";
 import { buildCharacter, equippedItemIds, fetchCharacterRaw, indexEntry } from "../../collector/lib/transform.mjs";
+import { RANK_KEYS, rankRow } from "../../collector/lib/rank.mjs";
 
 const ZAMIMG = "https://wow.zamimg.com";
 const ZAM_HEADERS = {
@@ -110,15 +111,24 @@ async function handleRefresh(request, env, url, h) {
   const c = buildCharacter(raw, { rank: member.rank, items, slug });
   const charBody = { collectedAt, ...c };
 
-  // R2 갱신: chars / index 항목 / state(아이템 캐시·lastLogin)
+  // R2 갱신: chars / index 항목 / rank 행 / state(아이템 캐시·lastLogin)
   const meta = (await (await env.DATA.get("state/meta.json"))?.json()) ?? { chars: {} };
   meta.chars[c.id] = c.lastLogin;
   index.members[mi] = indexEntry(member, c);
+  // rank.json(길드 통계)도 같은 값으로 — 안 바꾸면 수집기가 "변경 없음"으로 보고 이전 행을 계속 재사용함
+  const rank = await (await env.DATA.get("rank.json"))?.json();
+  const rankOk = rank?.keys?.join() === RANK_KEYS.join() && c.stats;
+  if (rankOk) {
+    const row = rankRow(c);
+    const ri = rank.rows.findIndex((r) => r[0] === c.id);
+    if (ri >= 0) rank.rows[ri] = row; else rank.rows.push(row);
+  }
   const put = (key, obj, cacheControl) =>
     env.DATA.put(key, JSON.stringify(obj), { httpMetadata: { contentType: "application/json; charset=utf-8", cacheControl } });
   await Promise.all([
     put(`chars/${c.id}.json`, charBody, DATA_CACHE),
     put("index.json", index, DATA_CACHE),
+    rankOk ? put("rank.json", rank, DATA_CACHE) : null,
     put("state/meta.json", meta, "no-store"),
     added ? put("state/items.json", items, "no-store") : null,
   ]);

@@ -169,7 +169,7 @@ export function GuildKpis({ members, stats }: { members: Member[]; stats: RankSt
 
 function Kpi({ label, value, sub, className, children }: { label: string; value: React.ReactNode; sub?: string; className?: string; children?: React.ReactNode }) {
   return (
-    <div className={cn("anim-count relative flex flex-col justify-center overflow-hidden rounded-xl border border-white/[.07] bg-[rgba(10,12,18,.72)] px-[clamp(12px,1.1vw,20px)] py-[clamp(10px,.9vw,16px)] backdrop-blur-md", className)}>
+    <div className={cn("anim-count relative flex flex-col justify-center overflow-hidden rounded-xl border border-white/[.07] bg-[rgba(10,12,18,.9)] px-[clamp(12px,1.1vw,20px)] py-[clamp(10px,.9vw,16px)]", className)}>
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
       <div className="text-fl-xs font-bold tracking-[1px] text-white/60">{label}</div>
       <div className="mt-[.15em] text-fl-xl font-extrabold tracking-[-.5px] text-white tabular-nums">{value}</div>

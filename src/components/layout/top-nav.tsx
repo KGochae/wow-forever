@@ -6,6 +6,7 @@ import { Megaphone, Search, Swords, Users, X } from "lucide-react";
 import { CharacterSearch } from "@/components/common/character-search";
 import type { Member } from "@/lib/wow";
 import { cn } from "@/lib/utils";
+import { RAID_ENABLED } from "@/lib/config";
 
 const TABS = [
   { key: "viewer", label: "캐릭터 뷰어" },
@@ -38,8 +39,10 @@ export function TopNav({ active, onTab, members, onPick, onMembers }: Props) {
       <button
         key={key}
         onClick={() => onTab(key)}
+        disabled={key === "raid" && !RAID_ENABLED}
+        title={key === "raid" && !RAID_ENABLED ? "준비 중입니다" : undefined}
         className={cn(
-          "relative flex shrink-0 items-center justify-center gap-[.3em] font-bold tracking-[.3px] transition-colors",
+          "relative flex shrink-0 items-center justify-center gap-[.3em] font-bold tracking-[.3px] transition-colors disabled:cursor-not-allowed disabled:opacity-35",
           mobile ? "h-full flex-1 text-fl-sm" : "rounded px-[.7em] py-[.3em] text-fl-sm",
           active === key ? "text-white" : "text-tx3 hover:text-tx2"
         )}

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { CLASS_INFO, byClassName, RANK_LABEL, specsOf, type Member } from "@/lib/wow";
 import { cn } from "@/lib/utils";
-import { FAN_NOTICE } from "@/lib/config";
+import { FAN_NOTICE, RAID_ENABLED } from "@/lib/config";
 import { useCharacter, useGuildIndex } from "@/lib/use-guild-data";
 import { TopNav } from "@/components/layout/top-nav";
 import { FilterRail, type Filters } from "@/components/guild/filter-rail";
@@ -15,6 +15,7 @@ import { StatColumn } from "@/components/character/stat-column";
 import { GearColumn } from "@/components/character/gear-column";
 import { TalentColumn } from "@/components/character/talent-column";
 import { ItemTooltipProvider } from "@/components/common/item-tooltip";
+import { RaidBuilder } from "@/components/raid/raid-builder";
 
 /**
  * 뷰어 (/viewer?id={캐릭터id})
@@ -25,7 +26,7 @@ export function GuildViewer() {
   const router = useRouter();
   const params = useSearchParams();
   const { index, loading, error } = useGuildIndex();
-  const tab = params.get("tab") === "raid" ? "raid" : "viewer"; // /viewer?tab=raid — 다른 페이지에서도 바로 진입
+  const tab = RAID_ENABLED && params.get("tab") === "raid" ? "raid" : "viewer"; // /viewer?tab=raid — 다른 페이지에서도 바로 진입
   const [filters, setFilters] = useState<Filters>({ rank: "all", classId: "all", spec: "all" });
   const [collapsed, setCollapsed] = useState(false); // 데스크톱(lg+) 사이드바 접기
   const [drawer, setDrawer] = useState(false); // 모바일·태블릿 길드원 목록 패널
@@ -87,8 +88,8 @@ export function GuildViewer() {
   const onTab = (k: string) => {
     if (k === "stats") return router.push("/stats");
     const q = new URLSearchParams(params); // 선택한 캐릭터(id)는 유지
-    if (k === "raid") q.set("tab", "raid");
-    else q.delete("tab");
+    if (k === "raid") { if (!RAID_ENABLED) return; q.set("tab", "raid"); }
+    else { q.delete("tab"); q.delete("comp"); }
     const s = q.toString();
     router.replace(s ? `/viewer?${s}` : "/viewer", { scroll: false });
   };
@@ -96,8 +97,24 @@ export function GuildViewer() {
   return (
     <ItemTooltipProvider>
       <div className="flex h-dvh flex-col overflow-hidden">
-        <TopNav active={tab} onTab={onTab} members={index?.members ?? null} onPick={select} onMembers={tab === "viewer" ? () => setDrawer(true) : undefined} />
+        <TopNav active={tab} onTab={onTab} members={index?.members ?? null} onPick={select} onMembers={() => setDrawer(true)} />
 
+        {tab === "raid" ? (
+          error ? (
+            <Center>데이터를 불러오지 못했습니다 · {error}</Center>
+          ) : loading ? (
+            <Center><div className="spin" /><span className="mt-2">길드 데이터 불러오는 중…</span></Center>
+          ) : (
+            <RaidBuilder
+              members={members}
+              ranks={ranks}
+              rankLabel={RANK_LABEL}
+              compParam={params.get("comp")}
+              drawer={drawer}
+              setDrawer={setDrawer}
+            />
+          )
+        ) : (
         <div className="flex min-h-0 flex-1">
           {/*
             길드원 목록 — 성능:
@@ -106,8 +123,8 @@ export function GuildViewer() {
             내부는 고정 폭(--sb-w)이라 접힘/펼침 중에도 목록 레이아웃 재계산 없음
             반응형: lg 미만 = 화면 왼쪽에서 밀려 나오는 패널(drawer, 상단바 "길드원" 버튼) / lg 이상 = 고정 사이드바(접기 가능)
           */}
-          {/* 사이드바는 캐릭터 뷰어 탭에서만 (레이드 구성 등 다른 탭은 숨김) */}
-          {tab === "viewer" && drawer && (
+          {/* 레이드 구성 탭은 이 영역 대신 RaidBuilder(자체 멤버 목록)를 그림 */}
+          {drawer && (
             <div className="anim-fade fixed inset-0 z-[65] bg-black/60 lg:hidden" onClick={() => setDrawer(false)} />
           )}
           <aside
@@ -118,8 +135,7 @@ export function GuildViewer() {
               drawer ? "translate-x-0" : "-translate-x-full",
               // 데스크톱: 고정 사이드바
               "lg:relative lg:inset-auto lg:z-auto lg:translate-x-0 lg:bg-white/[.025] lg:shadow-none lg:transition-none",
-              collapsed ? "lg:w-8" : "lg:w-[var(--sb-w)]",
-              tab !== "viewer" && "hidden"
+              collapsed ? "lg:w-8" : "lg:w-[var(--sb-w)]"
             )}
           >
             <div
@@ -152,8 +168,6 @@ export function GuildViewer() {
               <Center>데이터를 불러오지 못했습니다 · {error}</Center>
             ) : loading ? (
               <Center><div className="spin" /><span className="mt-2">길드 데이터 불러오는 중…</span></Center>
-            ) : tab !== "viewer" ? (
-              <Center>준비 중인 탭입니다</Center>
             ) : member ? (
               <div
                 key={member.id}
@@ -199,6 +213,7 @@ export function GuildViewer() {
             )}
           </main>
         </div>
+        )}
 
         <footer className="flex h-7 shrink-0 items-center justify-center gap-6 overflow-hidden whitespace-nowrap border-t border-line px-4 text-[10.5px] text-tx3/50">
           <span>© 2026 WOW.FOREVER</span>

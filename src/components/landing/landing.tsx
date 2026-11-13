@@ -4,13 +4,13 @@ import { useRouter } from "next/navigation";
 import { CharacterSearch } from "@/components/common/character-search";
 import { useGuildIndex } from "@/lib/use-guild-data";
 import type { Member } from "@/lib/wow";
-import { FAN_NOTICE } from "@/lib/config";
+import { FAN_NOTICE, RAID_ENABLED } from "@/lib/config";
 import { NoticePopup } from "@/components/landing/notice-popup";
 
-const NAV = [
+const NAV: { label: string; href?: string; disabled?: boolean }[] = [
   { label: "캐릭터 뷰어", href: "/viewer" },
   { label: "길드 통계", href: "/stats" },
-  { label: "⚔ 레이드 구성", disabled: true },
+  { label: "⚔ 레이드 구성", href: "/viewer?tab=raid", disabled: !RAID_ENABLED },
 ];
 
 /** WEB_PROJECT #page-landing (.landing-nav / .landing-hero / .wow-search-wrap) */
