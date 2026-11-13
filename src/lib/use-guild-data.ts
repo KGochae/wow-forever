@@ -14,6 +14,8 @@ import { avatarThumb } from "@/lib/avatar";
 export interface GuildIndex {
   guild: { name: string; id: number; faction?: string };
   collectedAt: string;
+  /** Update 버튼(Worker)으로 바뀐 시각 */
+  updatedAt?: string;
   members: Member[];
 }
 
@@ -71,6 +73,7 @@ export async function refreshCharacter(id: number, slug: string): Promise<Refres
     const raw = j.character as CharacterDetail;
     const c = { ...raw, avatar: avatarThumb(raw.avatar) };
     charCache.set(c.id, Promise.resolve(c));
+    indexPromise = null; // 다음 화면(길드 통계 등)에서 index를 다시 받아 updatedAt으로 rank.json도 새로 받게
     charListeners.forEach((f) => f(c.id, c));
     return { ok: true, character: c };
   } catch {

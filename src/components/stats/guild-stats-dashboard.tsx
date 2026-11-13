@@ -14,7 +14,7 @@ import { ActivityBars, GuildKpis } from "@/components/stats/activity-card";
 
 /** 접속 현황 카드 — 접속 시각(rank.json last_login) 수집 전까지 숨김. 다시 보이려면 true */
 const SHOW_ACTIVITY = false;
-import { useRankData } from "@/lib/use-rank-data";
+import { dataVer, useRankData } from "@/lib/use-rank-data";
 
 /**
  * 길드 통계 (/stats) — WEB_PROJECT 길드 대시보드(직업 비율 + 분포도) 구성
@@ -24,7 +24,7 @@ import { useRankData } from "@/lib/use-rank-data";
 export function GuildStatsDashboard() {
   const router = useRouter();
   const { index, loading, error } = useGuildIndex();
-  const { rank, error: rankError } = useRankData(index?.collectedAt);
+  const { rank, error: rankError } = useRankData(index ? dataVer(index) : undefined);
   const [cls, setCls] = useState<number | null>(null);
   const [spec, setSpec] = useState<string>("all"); // "all" | 특성명 | "none"
 

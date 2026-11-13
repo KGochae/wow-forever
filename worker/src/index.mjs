@@ -115,6 +115,7 @@ async function handleRefresh(request, env, url, h) {
   const meta = (await (await env.DATA.get("state/meta.json"))?.json()) ?? { chars: {} };
   meta.chars[c.id] = c.lastLogin;
   index.members[mi] = indexEntry(member, c);
+  index.updatedAt = collectedAt; // 사이트 캐시 무효화용 (수집 시각 collectedAt은 그대로)
   // rank.json(길드 통계)도 같은 값으로 — 안 바꾸면 수집기가 "변경 없음"으로 보고 이전 행을 계속 재사용함
   const rank = await (await env.DATA.get("rank.json"))?.json();
   const rankOk = rank?.keys?.join() === RANK_KEYS.join() && c.stats;
@@ -122,6 +123,7 @@ async function handleRefresh(request, env, url, h) {
     const row = rankRow(c);
     const ri = rank.rows.findIndex((r) => r[0] === c.id);
     if (ri >= 0) rank.rows[ri] = row; else rank.rows.push(row);
+    rank.updatedAt = collectedAt;
   }
   const put = (key, obj, cacheControl) =>
     env.DATA.put(key, JSON.stringify(obj), { httpMetadata: { contentType: "application/json; charset=utf-8", cacheControl } });
