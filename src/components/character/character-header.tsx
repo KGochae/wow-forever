@@ -37,7 +37,7 @@ export function CharacterHeader({ name, surname, level, classId, specName, avata
 
       <div className="anim-up min-w-0">
         <div className="flex items-baseline gap-2.5">
-          <span className="font-display shrink-0 text-fl-base font-bold text-tx3">LV.{level}</span>
+          <span className="shrink-0 text-fl-base font-bold text-white">LV.{level}</span>
           <span className="truncate text-[clamp(22px,1rem+1vw,38px)] font-extrabold leading-none tracking-[-.5px] text-tx1">{name} {surname}</span>
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-1.5">

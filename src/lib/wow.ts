@@ -26,10 +26,17 @@ export const RACE_NAME: Record<number, string> = {
 
 // 길드 등급 이름은 API에 없음 → 숫자 등급 표시 (추후 매핑)
 /** 길드 등급 이름 (블리자드 API는 등급 번호만 줌 → 여기서 이름 지정, 없으면 "등급 N") */
-export const RANK_NAMES: Record<number, string> = { 0: "길드장", 1: "스텝", 2: "L70", 3: "L60" };
+export const RANK_NAMES: Record<number, string> = { 0: "길드장", 1: "스텝", 2: "L70", 3: "L60", 4: "버튜버", 5: "와우포에버즈", 6: "추튜버", 7: "N와튜버", 8: "RN와튜버", 9: "CAM" };
 export const RANK_LABEL = (rank: number) => RANK_NAMES[rank] ?? `등급 ${rank}`;
-/** 등급 선택 시 색 (레거시 등급만 · 없으면 기본 흰색 선택 표시) */
-export const RANK_COLOR: Record<number, string> = { 2: "#9be06a", 3: "#e0b85c" };
+/** 등급 아이콘 툴팁(호버)에만 쓰는 긴 이름 — 없으면 RANK_NAMES 그대로 */
+export const RANK_TIP: Record<number, string> = { 2: "LEGACY 70", 3: "LEGACY 60" };
+/** 등급 포인트 색 — 필터 버튼(선택 시) · 길드원 목록 배지 공통 (길드장은 골드 글래스라 제외) */
+export const RANK_COLOR: Record<number, string> = { 1: "#ff6b6b", 2: "#f6cb55", 3: "#9be06a", 4: "#ffb3d9", 5: "#2fd18b", 6: "#8a9bb0", 7: "#7cc8ff", 8: "#5ee1e6", 9: "#e6ebf2" };
+/** 길드원 목록 아바타 배지 글자 (아이콘 등급은 RANK_ICON) */
+export const RANK_BADGE: Record<number, string> = { 1: "S", 2: "L7", 3: "L6", 4: "V", 6: "추", 7: "N", 8: "RN" };
+/** 글자 대신 아이콘으로 표시하는 등급 — baseball: 필터·배지 모두 WOW 야구공 마크 / camera: 아바타 배지만 아이콘 (필터는 이름) */
+export type RankIcon = "baseball" | "camera";
+export const RANK_ICON: Record<number, RankIcon> = { 5: "baseball", 9: "camera" };
 
 export const QUALITY_COLOR: Record<string, string> = {
   POOR: "#9d9d9d", COMMON: "#ffffff", UNCOMMON: "#1eff00",

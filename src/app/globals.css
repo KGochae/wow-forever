@@ -199,30 +199,170 @@
 .talent-scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.18); border-radius: 3px; }
 .talent-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.32); }
 
-/* ── 리더보드 1·2·3위 배지 (금·은·동 그라데이션 + 반짝임) ── */
+/* ── 리더보드 1·2·3위 — 순위 숫자만 금·은·동 금속 그라데이션 글자 ── */
 @layer components {
-  .medal {
-    position: relative;
-    overflow: hidden;
-    isolation: isolate;
-    color: #1a1206;
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(0, 0, 0, 0.3), 0 0 14px var(--glow);
+  .podium-1 { --m: #f5c542; --mt1: #fff6d0; --mt2: #f5c542; --mt3: #d8961c; }
+  .podium-2 { --m: #b9c8e0; --mt1: #ffffff; --mt2: #d2dcec; --mt3: #8f9db4; }
+  .podium-3 { --m: #e0955a; --mt1: #ffe6cf; --mt2: #e5a26a; --mt3: #a9622e; }
+  .podium-num {
+    background: linear-gradient(170deg, var(--mt1) 10%, var(--mt2) 50%, var(--mt3) 95%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 6px color-mix(in srgb, var(--m) 55%, transparent));
   }
-  .medal-1 { --glow: rgba(245, 197, 66, 0.5);  background: linear-gradient(135deg, #fff6c2 0%, #f7cd4f 30%, #c98e14 68%, #ffe68a 100%); }
-  .medal-2 { --glow: rgba(205, 215, 230, 0.35); background: linear-gradient(135deg, #ffffff 0%, #dbe2eb 30%, #8f9aaa 68%, #f1f4f8 100%); }
-  .medal-3 { --glow: rgba(214, 150, 90, 0.4);  background: linear-gradient(135deg, #ffe0c2 0%, #d89d62 30%, #8d5424 68%, #f3bf8f 100%); color: #1f0f04; }
-  .medal::after {
+}
+
+/* ── 길드장(rank 0) — 골드 글래스 + 오로라 ──
+   gm-frame : 테두리 선 없음(배경이 테두리 영역까지) + 유리 배경 + 오로라 빛(::before)
+   gm-text  : 흐르는 골드 글자
+   성능: blur 없이 radial-gradient + transform 애니메이션만 (GPU 합성) */
+@layer utilities {
+  .gm-frame {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border-color: transparent !important;
+    background:
+      linear-gradient(135deg, rgba(38, 28, 10, 0.72), rgba(16, 13, 9, 0.78) 55%, rgba(30, 22, 12, 0.74)) border-box !important;
+  }
+  /* 선택·마우스 올림: 그림자 대신 살짝 밝게 */
+  .gm-frame, .rank-frame { transition: filter 0.2s ease; }
+  .gm-frame:hover, .rank-frame:hover { filter: brightness(1.12); }
+  .gm-on, .rank-on { filter: brightness(1.28) !important; }
+  /* 오로라: 골드 · 앰버 · 로즈 · 민트 빛 덩어리가 천천히 흐름 */
+  .gm-frame::before {
     content: "";
     position: absolute;
     inset: -60%;
     z-index: -1;
-    background: linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, 0.85) 50%, transparent 58%);
-    transform: translateX(-100%);
-    animation: medalShine 3.6s ease-in-out infinite;
+    pointer-events: none;
+    background:
+      radial-gradient(28% 38% at 22% 35%, rgba(255, 205, 90, 0.38), transparent 70%),
+      radial-gradient(26% 34% at 72% 62%, rgba(255, 130, 95, 0.22), transparent 70%),
+      radial-gradient(22% 30% at 58% 28%, rgba(110, 230, 200, 0.16), transparent 70%),
+      radial-gradient(24% 32% at 38% 72%, rgba(190, 140, 255, 0.14), transparent 70%);
+    animation: gmAurora 10s ease-in-out infinite alternate;
   }
-  .medal-2::after { animation-delay: 0.3s; }
-  .medal-3::after { animation-delay: 0.6s; }
+  .gm-text {
+    background: linear-gradient(90deg, #fff4bf, #f5c542 25%, #c98e14 50%, #ffe08a 75%, #fff4bf);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent !important;
+    animation: gmText 4s linear infinite;
+  }
+  .gm-ring { box-shadow: 0 0 0 1.5px #f5c542, 0 0 10px rgba(245, 190, 70, 0.55); border-color: transparent !important; }
 }
-@keyframes medalShine { 0%, 65% { transform: translateX(-100%) } 100% { transform: translateX(100%) } }
-@media (prefers-reduced-motion: reduce) { .medal::after { animation: none; display: none; } }
+@keyframes gmAurora {
+  0% { transform: translate(-6%, -4%) rotate(0deg) }
+  50% { transform: translate(5%, 3%) rotate(8deg) }
+  100% { transform: translate(-3%, 6%) rotate(-6deg) }
+}
+@keyframes gmText { to { background-position: -200% 0 } }
+@media (prefers-reduced-motion: reduce) {
+  .gm-frame::before, .gm-text { animation: none; }
+}
+
+/* ── 스텝·L70·L60 — 길드장보다 절제된 등급 색 카드 (애니메이션 없음) ──
+   rank-frame : 테두리 선 없음 + 등급 포인트 색(--rc)이 옅게 섞인 그라데이션 유리 배경
+   rank-badge : 이름 앞 등급 배지 (S · L7 · L6) */
+@layer utilities {
+  .rank-frame {
+    border-color: transparent !important;
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--rc) var(--rc-mix, 14%), rgba(16, 12, 14, 0.6)), color-mix(in srgb, var(--rc) var(--rc-mix2, 0%), rgba(16, 12, 14, 0.7)) 60%) border-box !important;
+  }
+  /* 등급 배지 (S · L7 · L6) — 색은 style의 --rc(등급 포인트 색)에서 옅게 섞어 씀 */
+  .rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.15em;
+    height: 1.15em;
+    padding: 0 0.22em;
+    flex-shrink: 0;
+    border-radius: 0.3em;
+    font-size: 0.74em;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: color-mix(in srgb, var(--rc) 55%, white);
+    background: color-mix(in srgb, var(--rc) 16%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rc) 38%, transparent);
+  }
+  /* 아바타 위에 올릴 때: 사진 위에서도 읽히게 불투명 바탕 + 작게 */
+  .rank-badge-avatar {
+    font-size: 0.6em;
+    background: color-mix(in srgb, var(--rc) var(--rb-mix, 26%), #121014);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rc) 50%, transparent), 0 0 0 1.5px #121014;
+  }
+}
+
+/* ── L70 레거시 — 진주빛 홀리 글래스 (골드 대신 아이보리·샴페인·라벤더·하늘 메시) ──
+   lg-frame   : 유리 광택(위쪽 밝게) + 메시 그라데이션 오로라(::before, 느리게 떠다님) + 왼쪽 위 빛줄기(::after, 숨쉬듯)
+   lg-badge   : L7 배지 — 진주 홀로그램
+   lg-ring    : 아바타 후광
+   테두리 선·카드 그림자 없음, blur 없음 (성능) */
+@layer utilities {
+  .lg-frame {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border-color: transparent !important;
+    background:
+      linear-gradient(165deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.012) 42%, rgba(255, 255, 255, 0.035)) border-box,
+      rgba(19, 15, 28, 0.76) border-box !important;
+    transition: filter 0.2s ease;
+  }
+  .lg-frame:hover { filter: brightness(1.12); }
+  .lg-frame.lg-on { filter: brightness(1.28); }
+  .lg-frame::before {
+    content: "";
+    position: absolute;
+    inset: -50%;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(26% 36% at 20% 32%, rgba(255, 244, 222, 0.13), transparent 70%),
+      radial-gradient(28% 38% at 74% 34%, rgba(186, 156, 255, 0.24), transparent 70%),
+      radial-gradient(26% 34% at 58% 80%, rgba(150, 160, 255, 0.14), transparent 70%),
+      radial-gradient(24% 32% at 30% 76%, rgba(214, 150, 255, 0.15), transparent 70%);
+    animation: lgDrift 18s ease-in-out infinite alternate;
+  }
+  .lg-frame::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: conic-gradient(from 195deg at 10% -30%,
+      transparent 0deg, rgba(246, 238, 255, 0.08) 7deg, transparent 15deg,
+      rgba(236, 224, 255, 0.05) 24deg, transparent 32deg,
+      rgba(246, 238, 255, 0.07) 44deg, transparent 54deg);
+    -webkit-mask-image: linear-gradient(180deg, #000 10%, transparent 90%);
+    mask-image: linear-gradient(180deg, #000 10%, transparent 90%);
+    animation: lgBreath 7s ease-in-out infinite alternate;
+  }
+  .lg-badge {
+    color: #f6efff;
+    background:
+      linear-gradient(120deg, rgba(255, 236, 214, 0.24), rgba(186, 150, 255, 0.4) 50%, rgba(150, 160, 255, 0.32)),
+      #17131f;
+    box-shadow: inset 0 0 0 1px rgba(214, 196, 255, 0.45), 0 0 0 1.5px #121014;
+  }
+  .lg-ring { box-shadow: 0 0 0 1px rgba(226, 210, 255, 0.65), 0 0 8px rgba(186, 150, 255, 0.35); border-color: transparent !important; }
+}
+@keyframes lgDrift {
+  0% { transform: translate(-5%, -3%) scale(1) }
+  50% { transform: translate(4%, 2%) scale(1.06) }
+  100% { transform: translate(-2%, 5%) scale(1.02) }
+}
+@keyframes lgBreath { from { opacity: 0.45 } to { opacity: 1 } }
+@media (prefers-reduced-motion: reduce) { .lg-frame::before, .lg-frame::after { animation: none; } }
+
+/* CAM — 흰색을 더 많이 섞어 밝게 (카드 그라데이션 · 카메라 배지) */
+@layer utilities {
+  .cam-bright { --rc-mix: 30%; --rc-mix2: 10%; }
+  .cam-bright .rank-badge-avatar { --rb-mix: 55%; color: #fff; }
+}
