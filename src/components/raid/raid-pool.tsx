@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { ChevronLeft } from "lucide-react";
-import { CLASS_INFO, byClassName, type Member } from "@/lib/wow";
+import { CLASS_INFO, RANK_COLOR, byClassName, type Member } from "@/lib/wow";
+import { Cat, Group, RankName } from "@/components/guild/filter-rail";
 import { ROLE_GROUPS, ROLE_GROUP_INFO, SPEC_OPTIONS, classIcon, roleGroup, specOption, type RoleGroup } from "@/lib/raid-synergy";
 import { cn } from "@/lib/utils";
 
@@ -101,17 +102,22 @@ export function RaidPool({ members, assigned, ranks, rankLabel, specOf, onSpec, 
 
       <div className="flex min-h-0 flex-1 gap-2">
         {/* 세로 필터 (WEB_PROJECT .rb-filter-area) */}
-        <div className="no-scrollbar my-1.5 flex w-[clamp(70px,4.6vw,88px)] shrink-0 flex-col gap-2.5 overflow-y-auto text-fl-2xs">
-          <FilterBox title="길드 등급">
-            <FBtn active={rank === "all"} onClick={() => setRank("all")}>전체</FBtn>
-            {ranks.map((r) => <FBtn key={r} active={rank === r} onClick={() => setRank(r)}>{rankLabel(r)}</FBtn>)}
-          </FilterBox>
-          <FilterBox title="직업">
-            <FBtn active={cls === "all"} onClick={() => setCls("all")}>전체</FBtn>
-            {classes.map((id) => (
-              <FBtn key={id} active={cls === id} color={CLASS_INFO[id]?.color} onClick={() => setCls(cls === id ? "all" : id)}>{CLASS_INFO[id]?.name}</FBtn>
+        {/* 캐릭터 뷰어 사이드바(FilterRail)와 같은 버튼·섹션 사용 */}
+        <div className="no-scrollbar my-1.5 flex w-[clamp(74px,5vw,96px)] shrink-0 flex-col gap-1.5 overflow-y-auto text-fl-2xs">
+          <Group title="길드">
+            <Cat active={rank === "all"} onClick={() => setRank("all")}>전체</Cat>
+            {ranks.map((r) => (
+              <Cat key={r} color={RANK_COLOR[r]} gold={r === 0} legacy={r === 2} active={rank === r} onClick={() => setRank(r)}>
+                <RankName r={r} label={rankLabel(r)} />
+              </Cat>
             ))}
-          </FilterBox>
+          </Group>
+          <Group title="클래스">
+            <Cat active={cls === "all"} onClick={() => setCls("all")}>전체</Cat>
+            {classes.map((id) => (
+              <Cat key={id} active={cls === id} color={CLASS_INFO[id]?.color} onClick={() => setCls(cls === id ? "all" : id)}>{CLASS_INFO[id]?.name}</Cat>
+            ))}
+          </Group>
         </div>
 
         {/* 표 */}
@@ -168,29 +174,6 @@ export function RaidPool({ members, assigned, ranks, rankLabel, specOf, onSpec, 
         </div>
       </div>
     </div>
-  );
-}
-
-function FilterBox({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <div className="px-0.5 pb-0.5 font-extrabold tracking-[.5px] text-tx2">{title}</div>
-      {children}
-    </div>
-  );
-}
-function FBtn({ active, color, onClick, children }: { active: boolean; color?: string; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      onClick={onClick}
-      style={active && color ? { color, borderColor: color, backgroundColor: "rgba(130,130,130,.08)" } : undefined}
-      className={cn(
-        "w-full break-keep rounded border px-1 py-[.35em] text-center font-bold tracking-[.3px] transition-colors",
-        active ? (color ? "" : "border-tx1 bg-[rgba(130,130,130,.14)] text-tx1") : "border-line2 text-tx2 hover:bg-[rgba(130,130,130,.08)] hover:text-tx"
-      )}
-    >
-      {children}
-    </button>
   );
 }
 

@@ -18,5 +18,6 @@ export const FAN_NOTICE =
 /** Update 버튼 사용 가능 여부 (Worker 주소가 있을 때만) */
 export const CAN_REFRESH = !!API_BASE;
 
-/** 레이드 구성 탭 공개 여부 — false면 탭·랜딩 버튼 비활성, /viewer?tab=raid 로 들어와도 캐릭터 뷰어로 */
-export const RAID_ENABLED = false;
+/** 레이드 구성 탭 공개 여부 — false면 탭·랜딩 버튼 비활성, /viewer?tab=raid 로 들어와도 캐릭터 뷰어로
+ *  운영은 비공개 · 로컬 확인용: .env.local 에 NEXT_PUBLIC_RAID_ENABLED=1 */
+export const RAID_ENABLED = process.env.NEXT_PUBLIC_RAID_ENABLED === "1";

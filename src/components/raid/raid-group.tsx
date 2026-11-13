@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, X } from "lucide-react";
+import { X } from "lucide-react";
 import { CLASS_INFO } from "@/lib/wow";
-import { classIcon, groupProvides, roleGroup, slotRole, type GroupEffect, type RaidSlot } from "@/lib/raid-synergy";
+import { classIcon, roleGroup, slotRole, type RaidSlot } from "@/lib/raid-synergy";
 import { cn } from "@/lib/utils";
 import { FullName, RoleBadge, SpecSelect } from "./raid-pool";
-import { SkillIcon } from "./skill-icon";
 
 export type Pos = [number, number];
 
@@ -23,23 +22,15 @@ interface Props {
 }
 
 /**
- * 파티 카드 (WEB_PROJECT .rb-group)
- * 왼쪽: 파티 이름 · n/5 · 슬롯 5칸 / 오른쪽(155px, 접기): 파티 버프 · 공대 전체 버프 · 적 디버프
- * 카드 폭이 좁으면(컨테이너 < 470px) 오른쪽 패널이 슬롯 아래로 내려감
+ * 파티 카드 (WEB_PROJECT .rb-group) — 파티 이름 · n/5 · 슬롯 5칸
+ * 버프는 오른쪽 "공대 스킬 요약"의 파티 필터에서 확인 (카드 안 버프 패널 제거)
  */
 export function RaidGroup({ gi, slots, target, dragging, onSlotClick, onDragSlot, onDrop, onRemove, onSpec }: Props) {
-  const [synOpen, setSynOpen] = useState(true);
   const filled = slots.filter(Boolean).length;
-  const fx = groupProvides(slots);
 
   return (
-    <div className="@container">
-      <section
-        className={cn(
-          "relative overflow-hidden rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg-elevated)] shadow-[0_2px_12px_rgba(0,0,0,.35),inset_0_1px_0_var(--glass-highlight)]",
-          synOpen ? "@[470px]:pr-[155px]" : "@[470px]:pr-[22px]"
-        )}
-      >
+    <div data-flip={gi}>
+      <section className="relative overflow-hidden rounded-xl border border-[var(--glass-border)] bg-[var(--glass-bg-elevated)] shadow-[0_2px_12px_rgba(0,0,0,.35),inset_0_1px_0_var(--glass-highlight)]">
         <div className="flex flex-col gap-1.5 p-3">
           <div className="flex items-center gap-1.5 text-fl-2xs font-extrabold tracking-[1.2px] text-tx1">
             파티 {gi + 1}
@@ -62,57 +53,7 @@ export function RaidGroup({ gi, slots, target, dragging, onSlotClick, onDragSlot
             ))}
           </div>
         </div>
-
-        {/* 오른쪽 버프 패널 (WEB_PROJECT .rb-group-right) */}
-        <aside
-          className={cn(
-            "relative border-t border-[var(--glass-border)] bg-[linear-gradient(90deg,transparent_0%,rgba(16,20,28,.22)_24%,rgba(12,15,24,.5)_62%,rgba(10,13,22,.66)_100%)]",
-            "@[470px]:absolute @[470px]:inset-y-0 @[470px]:right-0 @[470px]:border-l @[470px]:border-t-0",
-            synOpen ? "@[470px]:w-[155px]" : "@[470px]:w-[22px]"
-          )}
-        >
-          <button
-            onClick={() => setSynOpen((v) => !v)}
-            aria-label="버프 패널 접기/펼치기"
-            className="absolute right-1 top-1.5 z-[2] hidden h-[18px] w-[18px] items-center justify-center rounded-[3px] text-tx2 transition-colors hover:bg-white/10 hover:text-tx1 @[470px]:flex"
-          >
-            <ChevronLeft className={cn("h-3.5 w-3.5 transition-transform", !synOpen && "rotate-180")} />
-          </button>
-          <div className={cn("no-scrollbar flex h-full flex-col gap-1 overflow-y-auto p-2.5 text-fl-2xs transition-opacity", !synOpen && "@[470px]:pointer-events-none @[470px]:opacity-0")}>
-            {filled === 0 ? (
-              <div className="flex flex-1 items-center justify-center py-3 text-tx3/60">파티 버프/디버프</div>
-            ) : (
-              <>
-                <Section title="파티 버프" items={fx.party} empty="파티 버프 없음" />
-                <Section title="공대 전체 버프" items={fx.raid} />
-                <Section title="적 디버프" items={fx.debuff} danger />
-              </>
-            )}
-          </div>
-        </aside>
       </section>
-    </div>
-  );
-}
-
-function Section({ title, items, empty = "없음", danger }: { title: string; items: GroupEffect[]; empty?: string; danger?: boolean }) {
-  return (
-    <div className="mb-1">
-      <div className={cn("mb-1 border-b border-white/[.06] pb-1 text-[.92em] font-extrabold", danger ? "text-[#e05050]" : "text-tx1")}>{title}</div>
-      {items.length ? (
-        <div className="grid grid-cols-[max-content_1fr] gap-x-[5px] gap-y-[3px]">
-          {items.map((e) => (
-            <div key={e.short} className="contents">
-              <span className="whitespace-nowrap pt-[2px] text-[.9em] text-tx3">{e.short}</span>
-              <span className="flex flex-wrap gap-[2px]">
-                {e.providers.map((p) => <SkillIcon key={p.name} p={p} className="h-[18px] w-[18px]" />)}
-              </span>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <span className="text-[.9em] italic text-tx3/40">{empty}</span>
-      )}
     </div>
   );
 }

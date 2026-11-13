@@ -34,7 +34,7 @@ type Panel = "synergy" | "save" | null;
  *  오른쪽: "공대 스킬 요약"(처음부터 열림)·"공대 저장 및 불러오기" 패널(.rb-save-col)
  * 반응형
  *  - lg 미만: 레이드 멤버는 왼쪽에서 밀려 나오는 패널(상단바 "길드원"), 오른쪽 패널은 화면 전체
- *  - 파티 카드 열 수는 남은 폭(컨테이너 쿼리) — 사이드바를 접으면 3열
+ *  - 파티 카드 열 수는 남은 폭에 맞춰 자동(auto-fill) — 사이드바·스킬 요약을 접으면 빈 공간으로 이동
  *  - 조작: 끌어서 놓기(마우스) · 칸 누르고 길드원 고르기(터치) · 칸 두 개를 차례로 누르면 자리 바꾸기
  */
 export function RaidBuilder({ members, ranks, rankLabel, compParam, drawer, setDrawer }: Props) {
@@ -51,6 +51,8 @@ export function RaidBuilder({ members, ranks, rankLabel, compParam, drawer, setD
   const [toast, setToast] = useState<string | null>(null);
   const drag = useRef<Drag>(null);
   const [dragging, setDragging] = useState(false);
+  const gridRef = useRef<HTMLDivElement>(null);
+  useFlip(gridRef);
 
   // 처음: 공유 링크 → 없으면 이 기기에 남은 작업
   useEffect(() => {
@@ -269,9 +271,10 @@ export function RaidBuilder({ members, ranks, rankLabel, compParam, drawer, setD
           </div>
         )}
 
-        {/* 파티 카드 (.rb-groups-grid) — 2열, 사이드바 접으면 3열 */}
-        <div className="@container">
-          <div className="grid grid-cols-[minmax(0,520px)] items-start gap-[clamp(14px,1.6vw,30px)] @[980px]:grid-cols-[repeat(2,minmax(0,520px))] @[1620px]:grid-cols-[repeat(3,minmax(0,520px))]">
+        {/* 파티 카드 (.rb-groups-grid) — 남은 폭에 들어가는 만큼 열을 채움 (사이드바·스킬 요약을 접으면 빈 공간으로 올라옴)
+            열이 바뀌면 카드가 새 자리로 미끄러지듯 이동 (useFlip) */}
+        <div>
+          <div ref={gridRef} className="relative grid grid-cols-[repeat(auto-fill,minmax(min(100%,380px),1fr))] items-start gap-[clamp(14px,1.6vw,30px)]">
             {groups.map((g, gi) => (
               <RaidGroup
                 key={gi}
@@ -314,7 +317,7 @@ export function RaidBuilder({ members, ranks, rankLabel, compParam, drawer, setD
           />
         ) : panel === "synergy" ? (
           <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto">
-            <RaidSynergyPanel states={states} />
+            <RaidSynergyPanel states={states} groups={groups} />
           </div>
         ) : null}
       </aside>
@@ -326,6 +329,38 @@ export function RaidBuilder({ members, ranks, rankLabel, compParam, drawer, setD
       )}
     </div>
   );
+}
+
+/**
+ * 그리드 열 수가 바뀌어 카드 자리가 크게 바뀌면(30px↑) 이전 자리에서 새 자리로 이동 애니메이션 (FLIP)
+ * 대상: 그리드 안 [data-flip] 요소 · 그리드 폭이 바뀔 때(ResizeObserver)만 확인 · 동작 줄이기 설정이면 생략
+ */
+function useFlip(ref: React.RefObject<HTMLDivElement | null>) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const last = new Map<string, { x: number; y: number }>();
+    const measure = (animate: boolean) => {
+      el.querySelectorAll<HTMLElement>("[data-flip]").forEach((c) => {
+        const k = c.dataset.flip!;
+        const now = { x: c.offsetLeft, y: c.offsetTop };
+        const prev = last.get(k);
+        last.set(k, now);
+        if (!animate || reduce || !prev) return;
+        const dx = prev.x - now.x, dy = prev.y - now.y;
+        if (Math.abs(dx) + Math.abs(dy) < 30) return;
+        c.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "translate(0, 0)" }], {
+          duration: 360,
+          easing: "cubic-bezier(.2,.7,.2,1)",
+        });
+      });
+    };
+    measure(false);
+    const ro = new ResizeObserver(() => measure(true));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [ref]);
 }
 
 /** 인원 카드 (.rb-cnt-card) — n/25 · 딜 · 힐 · 탱 */

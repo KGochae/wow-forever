@@ -7,6 +7,7 @@ import { CharacterSearch } from "@/components/common/character-search";
 import type { Member } from "@/lib/wow";
 import { cn } from "@/lib/utils";
 import { RAID_ENABLED } from "@/lib/config";
+import { NoticePopup } from "@/components/landing/notice-popup";
 
 const TABS = [
   { key: "viewer", label: "캐릭터 뷰어" },
@@ -32,6 +33,7 @@ interface Props {
  */
 export function TopNav({ active, onTab, members, onPick, onMembers }: Props) {
   const [searchOpen, setSearchOpen] = useState(false);
+  const [noticeOpen, setNoticeOpen] = useState(false);
   const pick = (m: Member) => { setSearchOpen(false); onPick(m); };
 
   const tabBtn = (mobile: boolean) =>
@@ -96,10 +98,12 @@ export function TopNav({ active, onTab, members, onPick, onMembers }: Props) {
               searchOpen && "max-md:hidden"
             )}
             title="공지사항"
+            onClick={() => setNoticeOpen(true)}
           >
             <Megaphone className="h-[1.05em] w-[1.05em] text-[#ff4d6d]" />
             <span className="hidden lg:inline">공지사항</span>
           </button>
+          <NoticePopup open={noticeOpen} onClose={() => setNoticeOpen(false)} />
         </div>
       </div>
 

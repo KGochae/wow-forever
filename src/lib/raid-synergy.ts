@@ -62,19 +62,6 @@ export const ROLE_GROUP_INFO: Record<RoleGroup, { label: string; short: string; 
 };
 export const roleGroup = (r?: Role): RoleGroup | undefined => (r === "physical" || r === "caster" ? "dps" : r);
 
-/** 파티 카드 오른쪽 패널의 짧은 효과 이름 (WEB_PROJECT RB_PLAIN.short) */
-export const SHORT: Record<string, string> = {
-  battle_shout: "전투력 증가", blessing_might: "전투력 증가", melee_totem: "근접 공격 강화", strength_of_earth: "힘 증가",
-  grace_of_air: "민첩 증가", crit: "치명타 증가", trueshot_aura: "원거리 공격력",
-  arcane_brilliance: "지능 증가", prayer_of_spirit: "정신력 증가", blessing_wisdom: "마나 재생", power_infusion: "주문 가속",
-  innervate: "마나 회복", mana_spring: "마나 재생", mana_tide: "마나 회복",
-  blessing_kings: "전 능력치 증가", gift_of_the_wild: "전 능력치 증가", prayer_of_fortitude: "체력 증가",
-  devotion_aura: "방어도 증가", blood_pact: "체력 증가",
-  armor_reduction: "방어도 감소", faerie_fire: "방어도 감소", curse_elements: "주문 피해 증가", curse_recklessness: "방어도 감소",
-  hunters_mark: "원거리 공격력", thunder_clap: "공격 속도 감소", demoralizing_shout: "적 공격력 감소", hit_reduction: "적 적중 감소",
-  mortal_strike: "치유 감소",
-};
-
 /** 직업별 특성 선택지 (드루이드 야성은 딜러·탱커로 나눔) */
 export interface SpecOption { key: string; spec: string; label: string; role: Role }
 const o = (key: string, spec: string, role: Role, label = spec): SpecOption => ({ key, spec, label, role });
@@ -157,31 +144,6 @@ export function evaluate(groups: Groups): Map<string, SynergyState> {
     });
   }
   return res;
-}
-
-/**
- * 특정 파티 구성원이 주는 효과 (파티 카드 오른쪽 패널 · 해제/저항 제외)
- * party: 이 파티만 받는 버프 / raid: 공대 전체 버프 / debuff: 적 약화
- */
-export interface GroupEffect { short: string; providers: SynergyProvider[] }
-export function groupProvides(group: (RaidSlot | null)[]) {
-  const slots = group.filter(Boolean) as RaidSlot[];
-  const out = { party: new Map<string, SynergyProvider[]>(), raid: new Map<string, SynergyProvider[]>(), debuff: new Map<string, SynergyProvider[]>() };
-  for (const syn of RAID_SYNERGIES) {
-    if (syn.cat === "utility" || syn.cat === "resist") continue;
-    for (const p of syn.providers) {
-      const n = slots.filter((s) => providesFor(p, s)).length;
-      // 공유 묶음 2번째 이상 스킬(힘·지혜의 축복 등)은 파티 안에 그 수만큼 있을 때만
-      if (!n || (p.share && n < (p.slot ?? 1))) continue;
-      const bucket = syn.cat === "debuff" ? out.debuff : p.scope === "party" ? out.party : out.raid;
-      const key = SHORT[syn.id] ?? synergyTitle(syn);
-      const list = bucket.get(key) ?? [];
-      if (!list.some((x) => x.name === p.name)) list.push(p);
-      bucket.set(key, list);
-    }
-  }
-  const arr = (m: Map<string, SynergyProvider[]>): GroupEffect[] => [...m].map(([short, providers]) => ({ short, providers }));
-  return { party: arr(out.party), raid: arr(out.raid), debuff: arr(out.debuff) };
 }
 
 export const spellIcon = (icon: string, size: "small" | "medium" | "large" = "medium") =>

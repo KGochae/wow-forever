@@ -21,7 +21,8 @@ interface Props {
 }
 
 /** WEB_PROJECT .sidebar-filter-col / .sidebar-cat */
-function Cat({ active, children, onClick, color, gold, legacy }: { active: boolean; children: React.ReactNode; onClick: () => void; color?: string; gold?: boolean; legacy?: boolean }) {
+/** 필터 버튼 — 캐릭터 뷰어·레이드 구성 사이드바 공용 */
+export function Cat({ active, children, onClick, color, gold, legacy }: { active: boolean; children: React.ReactNode; onClick: () => void; color?: string; gold?: boolean; legacy?: boolean }) {
   // color: 직업 색 — 선택(클릭)했을 때만 글자·테두리·배경에 직업 색 적용
   // gold: 길드장 — 선택했을 때만 골드 글래스 + 오로라 (globals.css .gm-*), 선택 전은 일반 버튼과 동일
   if (gold && active) {
@@ -49,14 +50,17 @@ function Cat({ active, children, onClick, color, gold, legacy }: { active: boole
   return (
     <button
       onClick={onClick}
-      style={tint ? { color, borderColor: color, backgroundColor: `${color}24` } : undefined}
+      // 선택 전: 마우스를 올리면 테마 색(직업·등급)으로 미리 보기 (--c / --cb)
+      style={tint ? { color, borderColor: color, backgroundColor: `${color}24` } : color ? ({ "--c": color, "--cb": `${color}14` } as React.CSSProperties) : undefined}
       className={cn(
         "w-full break-keep rounded border px-[.5em] py-[.4em] text-center font-bold tracking-[.3px] transition-colors duration-100",
         tint
           ? ""
           : active
             ? "border-tx1 bg-[rgba(130,130,130,.14)] text-tx1"
-            : "border-line2 bg-transparent text-tx2 hover:bg-[rgba(130,130,130,.08)] hover:text-tx"
+            : color
+              ? "border-line2 bg-transparent text-tx2 hover:border-[var(--c)] hover:bg-[var(--cb)] hover:text-[var(--c)]"
+              : "border-line2 bg-transparent text-tx2 hover:bg-[rgba(130,130,130,.08)] hover:text-tx"
       )}
     >
       {children}
@@ -64,7 +68,13 @@ function Cat({ active, children, onClick, color, gold, legacy }: { active: boole
   );
 }
 
-function Group({ title, children }: { title: string; children: React.ReactNode }) {
+/** 등급 버튼 내용 — 야구공 아이콘 등급은 아이콘, 나머지는 이름 */
+export function RankName({ r, label }: { r: number; label: string }) {
+  return RANK_ICON[r] === "baseball" ? <span title={label}><WowBaseballMark /></span> : <>{label}</>;
+}
+
+/** 필터 섹션 (골드 제목) — 캐릭터 뷰어·레이드 구성 사이드바 공용 */
+export function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1 rounded-lg bg-white/[.03] p-1.5">
       {/* 섹션 제목 — 버튼과 구분되게 작은 골드 글자 + 양옆 가는 선 */}
@@ -82,11 +92,7 @@ export function FilterRail({ ranks, classes, rankLabel, specs, hasUnknown, value
         {ranks.map((r) => (
           /* 레거시 등급(L70·L60): 직업 버튼처럼 선택했을 때만 색 */
           <Cat key={r} color={RANK_COLOR[r]} gold={r === 0} legacy={r === 2} active={value.rank === r} onClick={() => onChange({ ...value, rank: r })}>
-            {RANK_ICON[r] === "baseball" ? (
-              <span title={rankLabel(r)}><WowBaseballMark /></span>
-            ) : (
-              rankLabel(r)
-            )}
+            <RankName r={r} label={rankLabel(r)} />
           </Cat>
         ))}
       </Group>

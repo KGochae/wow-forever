@@ -58,15 +58,15 @@ const NAME_LEFT = "left-[3.4em]";
 const CELL = "px-[.8em] py-[.55em]";
 
 export function StatLeaderboard({ members, stats, onPick }: { members: Member[]; stats: RankStats; onPick: (m: Member) => void }) {
-  // 등급 필터 (all = 전체) — 클래스 인원수·표 모두 이 등급 안에서 계산 · 길드장(0)은 필터 없이 항상 포함
-  const [rk, setRk] = useState<number | "all">("all");
+  // 등급 필터 (복수 선택 · 비어 있으면 전체) — 클래스 인원수·표 모두 이 등급 안에서 계산 · 길드장(0)은 필터 없이 항상 포함
+  const [rk, setRk] = useState<Set<number>>(() => new Set());
   const rankCounts = useMemo(() => {
     const c = new Map<number, number>();
     members.forEach((m) => stats.has(m.id) && c.set(m.rank, (c.get(m.rank) ?? 0) + 1));
     return c;
   }, [members, stats]);
   const ranks = [...rankCounts.keys()].filter((r) => r !== 0).sort((a, b) => a - b);
-  const pool = useMemo(() => members.filter((m) => stats.has(m.id) && (rk === "all" || m.rank === rk || m.rank === 0)), [members, stats, rk]);
+  const pool = useMemo(() => members.filter((m) => stats.has(m.id) && (rk.size === 0 || rk.has(m.rank) || m.rank === 0)), [members, stats, rk]);
   const counts = useMemo(() => {
     const c = new Map<number, number>();
     pool.forEach((m) => c.set(m.classId, (c.get(m.classId) ?? 0) + 1));
@@ -123,7 +123,7 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
     });
     return o;
   }, [rows, columns, stats]);
-  const animKey = `${rk}|${cls}|${spec}|${sortKey}|${dir}|${cur}`; // 바뀌면 행 애니메이션 다시 재생
+  const animKey = `${[...rk].sort().join()}|${cls}|${spec}|${sortKey}|${dir}|${cur}`; // 바뀌면 행 애니메이션 다시 재생
   const scrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => { scrollRef.current?.scrollTo({ top: 0 }); }, [animKey]); // 조건이 바뀌면 표 맨 위로
 
@@ -154,7 +154,15 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
   }, [cls]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const pickClass = (id: number | "all") => { setCls(id); setSpec("all"); setSort(null); setPage(0); };
-  const pickRank = (r: number | "all") => { setRk(r); setSpec("all"); setPage(0); };
+  const pickRank = (r: number | "all") => {
+    setRk((prev) => {
+      if (r === "all") return new Set();
+      const n = new Set(prev);
+      if (n.has(r)) n.delete(r); else n.add(r);
+      return n.size === ranks.length ? new Set() : n; // 전부 고르면 = 전체
+    });
+    setSpec("all"); setPage(0);
+  };
   const pickSort = (k: string) => {
     setSort((s) => (s?.k === k || (!s && k === "level") ? { k, dir: dir === "desc" ? "asc" : "desc" } : { k, dir: "desc" }));
     setPage(0);
@@ -195,11 +203,11 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
       {/* 등급 필터 — 표 위 가로 한 줄 (아이콘 호버 시 등급 이름) */}
       <div className="flex shrink-0 flex-wrap items-center gap-[.35em] text-fl-sm">
         <span className="mr-[.35em] text-[.82em] font-extrabold tracking-[1.2px] text-white/60">등급</span>
-        <RankChip on={rk === "all"} color="#ffffff" count={members.filter((m) => stats.has(m.id)).length} onClick={() => pickRank("all")}>
+        <RankChip on={rk.size === 0} color="#ffffff" onClick={() => pickRank("all")}>
           전체
         </RankChip>
         {ranks.map((r) => (
-          <RankChip key={r} on={rk === r} color={RANK_COLOR[r] ?? "#f5c542"} count={rankCounts.get(r)} onClick={() => pickRank(r)}>
+          <RankChip key={r} on={rk.has(r)} color={RANK_COLOR[r] ?? "#f5c542"} onClick={() => pickRank(r)}>
             <RankMark rank={r} />
           </RankChip>
         ))}
@@ -342,15 +350,19 @@ function ChipRow({ title, alignRank, children }: { title: string; alignRank?: bo
   );
 }
 
+/** 선택 전 칩: 마우스를 올리면 테마 색(직업·특성·등급)으로 미리 보기 */
+const hoverTint = (color: string) => ({ "--c": color, "--cb": `${color}14` }) as React.CSSProperties;
+const HOVER_TINT = "border-white/15 text-white hover:border-[var(--c)] hover:bg-[var(--cb)] hover:text-[var(--c)]";
+
 function Chip({ on, color, strong, count, onClick, children }: { on: boolean; color: string; strong?: boolean; count?: number; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
       onClick={onClick}
-      style={on ? { color, borderColor: color, backgroundColor: `${color}24` } : undefined}
+      style={on ? { color, borderColor: color, backgroundColor: `${color}24` } : hoverTint(color)}
       className={cn(
         "rounded-md border px-[.85em] py-[.35em] text-center transition-colors lg:flex lg:w-full lg:items-center lg:justify-between lg:py-[.45em] lg:text-left",
         strong ? "font-extrabold" : "font-bold",
-        !on && "border-white/15 text-white hover:bg-white/[.08]"
+        !on && HOVER_TINT
       )}
     >
       {children}
@@ -359,19 +371,19 @@ function Chip({ on, color, strong, count, onClick, children }: { on: boolean; co
   );
 }
 
-/** 등급 칩 — 표 위 가로 줄용 (아이콘 + 인원수) */
-function RankChip({ on, color, count, onClick, children }: { on: boolean; color: string; count?: number; onClick: () => void; children: React.ReactNode }) {
+/** 등급 칩 — 표 위 가로 줄용 (아이콘만 · 복수 선택 토글) */
+function RankChip({ on, color, onClick, children }: { on: boolean; color: string; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
       onClick={onClick}
-      style={on ? { color, borderColor: color, backgroundColor: `${color}24` } : undefined}
+      aria-pressed={on}
+      style={on ? { color, borderColor: color, backgroundColor: `${color}24` } : hoverTint(color)}
       className={cn(
         "inline-flex items-center gap-[.45em] whitespace-nowrap rounded-md border px-[.65em] py-[.3em] font-bold transition-colors",
-        !on && "border-white/15 text-white hover:bg-white/[.08]"
+        !on && HOVER_TINT
       )}
     >
       {children}
-      {count != null && <span className="text-[.85em] font-semibold tabular-nums opacity-60">{count}</span>}
     </button>
   );
 }
