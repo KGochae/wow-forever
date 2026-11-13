@@ -51,16 +51,19 @@ log(`1. 길드원 ${members.length}명`);
 
 // ── 2. 프로필 (1요청/인) → 변경 판단 ──
 const profiles = new Map();
+const blocked = new Set(); // 프로필 404/403 = 공개 설정 변경 등으로 더 이상 조회 불가 → 과거 데이터 대신 '수집 불가'로 표시
 await Promise.all(members.map(async (m) => {
   const r = await bnet.get(`/profile/wow/character/${m.slug}`, NS.profile(bnet.region));
   // 저장은 전부 캐릭터 id 기준. 이름(slug)은 조회 주소용 — 응답 id가 명단 id와 다르면(이름 변경·재사용 직후) 버림
   if (r.status === 200 && r.data?.id === m.id) profiles.set(m.id, r.data);
+  else if (r.status === 404 || r.status === 403) blocked.add(m.id); // 5xx·429 같은 일시 오류는 이전 데이터 유지
 }));
+for (const id of blocked) delete meta.chars[id]; // 다시 공개되면 변경 판단 없이 바로 재수집되도록
 const changed = members.filter((m) => {
   const p = profiles.get(m.id);
   return p && (FORCE || meta.chars[m.id] !== p.last_login_timestamp || !prevById.get(m.id)?.has);
 });
-log(`2. 프로필 ${profiles.size}/${members.length} · 변경 ${changed.length}명`);
+log(`2. 프로필 ${profiles.size}/${members.length} · 변경 ${changed.length}명 · 조회 불가 ${blocked.size}명`);
 
 // ── 3. 변경된 캐릭터만 하위 7종 (장비·능력치·특성·이미지·외형·전문기술·완료 퀘스트) ──
 const raws = new Map();
@@ -108,6 +111,7 @@ const index = {
   members: members.map((m) => {
     const c = built.get(m.id);
     if (c) return indexEntry(m, c);
+    if (blocked.has(m.id)) return indexEntry(m, null); // 조회 불가 → 과거 데이터 버리고 '수집 불가'
     const prev = prevById.get(m.id);
     const p = profiles.get(m.id);
     if (prev?.has) return withStreamer({ ...prev, level: p?.level ?? prev.level, rank: m.rank, name: m.name, surname: m.surname, slug: m.slug });

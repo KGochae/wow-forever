@@ -100,6 +100,8 @@ async function handleRefresh(request, env, url, h) {
   // Blizzard 조회 (프로필 + 5종 = 7요청 + 토큰)
   const bnet = createBnet({ clientId: env.BLIZZARD_CLIENT_ID, clientSecret: env.BLIZZARD_CLIENT_SECRET, region: env.REGION ?? "kr", concurrency: 6 });
   const { status, raw } = await fetchCharacterRaw(bnet, slug);
+  // 조회 불가(공개 설정 변경 등) → 과거 데이터 대신 '수집 불가'로 (이름 변경으로 인한 404면 다음 정기 수집에서 새 이름으로 바로 재수집됨)
+  if ((status === 404 || status === 403) && member.has) await markBlocked(env, index, mi);
   if (status !== 200) return json({ error: "blizzard", status, hint: "로그아웃 후 반영 / 10레벨 이상 / 이름이 바뀌었으면 다음 정기 수집 후" }, status === 404 ? 404 : 502, h);
   // 같은 이름을 다른 캐릭터가 쓰게 된 경우 (이름 변경 직후) — 다른 캐릭터 데이터로 덮어쓰지 않음
   if (raw.profile?.id !== member.id) return json({ error: "renamed", status: 409, hint: "이름이 바뀐 캐릭터 — 다음 정기 수집 후 다시 시도" }, 409, h);
@@ -136,6 +138,26 @@ async function handleRefresh(request, env, url, h) {
   ]);
 
   return json({ ok: true, character: charBody, requests: bnet.stats.requests }, 200, { ...h, "Cache-Control": "no-store" });
+}
+
+/** index 항목을 has:false로, rank.json 행·meta lastLogin 제거 */
+async function markBlocked(env, index, mi) {
+  const m = index.members[mi];
+  const at = new Date().toISOString();
+  index.members[mi] = indexEntry(m, null);
+  index.updatedAt = at;
+  const rank = await (await env.DATA.get("rank.json"))?.json();
+  const ri = rank?.rows?.findIndex((r) => r[0] === m.id) ?? -1;
+  if (ri >= 0) { rank.rows.splice(ri, 1); rank.updatedAt = at; }
+  const meta = (await (await env.DATA.get("state/meta.json"))?.json()) ?? { chars: {} };
+  delete meta.chars[m.id];
+  const put = (key, obj, cacheControl) =>
+    env.DATA.put(key, JSON.stringify(obj), { httpMetadata: { contentType: "application/json; charset=utf-8", cacheControl } });
+  await Promise.all([
+    put("index.json", index, DATA_CACHE),
+    ri >= 0 ? put("rank.json", rank, DATA_CACHE) : null,
+    put("state/meta.json", meta, "no-store"),
+  ]);
 }
 
 // ── 수집기 업로드 (GitHub Actions) ──
