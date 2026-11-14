@@ -53,6 +53,9 @@ export function flatStats(s) {
   return o;
 }
 
+const visibleStats = (i) => (i.stats ?? []).filter((s) => !s.is_hidden && s.display?.display_string);
+const isBonusStat = (s) => s.is_equip_bonus || (s.display?.color && s.display.color.r === 0 && s.display.color.g === 255 && s.display.color.b === 0);
+
 /** 장비 — icon/displayId는 items 캐시로 채움 */
 export function parseEquip(e, items = {}) {
   return (e?.equipped_items ?? []).map((i) => {
@@ -68,9 +71,22 @@ export function parseEquip(e, items = {}) {
         min: w.damage.min_value ?? null, max: w.damage.max_value ?? null, damageType: w.damage.damage_class?.name ?? null,
         speed: w.attack_speed?.value != null ? w.attack_speed.value / 1000 : null, dps: w.dps?.value ?? null,
       } : null,
-      stats: (i.stats ?? []).map((s) => s.display?.display_string).filter(Boolean),
+      // 숨김 스탯(모든 저항 +N의 개별 저항 등) 제외, 장착 보너스(녹색)는 따로
+      stats: visibleStats(i).filter((s) => !isBonusStat(s)).map((s) => s.display.display_string),
+      bonusStats: visibleStats(i).filter(isBonusStat).map((s) => s.display.display_string),
       enchants: (i.enchantments ?? []).map((x) => x.display_string),
-      requiredLevel: i.requirements?.level?.value ?? null, durability: i.durability?.value ?? null, sellPrice: i.sell_price?.value ?? null,
+      spells: (i.spells ?? []).map((x) => x.description).filter(Boolean),
+      set: i.set ? {
+        name: i.set.display_string ?? i.set.item_set?.name,
+        items: (i.set.items ?? []).map((x) => ({ name: x.item?.name, equipped: !!x.is_equipped })),
+        effects: (i.set.effects ?? []).map((x) => ({ text: x.display_string, count: x.required_count ?? null, active: !!x.is_active })),
+      } : null,
+      description: i.description ?? null, unique: i.unique_equipped ?? null,
+      shieldBlock: i.shield_block?.display?.display_string ?? null,
+      classes: i.requirements?.playable_classes?.display_string ?? null,
+      charges: i.charges?.display_string ?? null, transmog: i.transmog?.display_string ?? null,
+      requiredLevel: i.requirements?.level?.value ?? null, durability: i.durability?.value ?? null,
+      durabilityText: i.durability?.display_string ?? null, sellPrice: i.sell_price?.value ?? null,
     };
   });
 }

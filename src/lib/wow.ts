@@ -77,9 +77,25 @@ export interface EquipItem {
   weapon?: { min: number | null; max: number | null; damageType?: string | null; speed: number | null; dps: number | null } | null;
   displayId?: number | null;
   stats: string[];
+  /** 장착 보너스 스탯 (녹색) */
+  bonusStats?: string[];
   enchants?: string[];
+  /** 착용/사용/발동 효과 문구 */
+  spells?: string[];
+  set?: { name: string; items: { name: string; equipped: boolean }[]; effects: { text: string; count: number | null; active: boolean }[] } | null;
+  /** 아이템 설명 (따옴표 문구) */
+  description?: string | null;
+  /** "고유 장착 아이템" */
+  unique?: string | null;
+  shieldBlock?: string | null;
+  /** "직업: 성기사" */
+  classes?: string | null;
+  charges?: string | null;
+  transmog?: string | null;
   requiredLevel?: number | null;
   durability?: number | null;
+  /** "내구도 64 / 70" */
+  durabilityText?: string | null;
   sellPrice?: number | null;
 }
 
