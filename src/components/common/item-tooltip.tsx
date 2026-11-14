@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { QUALITY_COLOR, copper, iconUrl, type EquipItem } from "@/lib/wow";
+import { QUALITY_COLOR, iconUrl, type EquipItem } from "@/lib/wow";
 
 /**
  * WEB_PROJECT #tooltip 처럼 커서를 따라다니는 툴팁.
@@ -58,10 +58,9 @@ export function ItemTooltipProvider({ children }: { children: ReactNode }) {
   );
 }
 
-/** 게임 툴팁 순서: 이름 → 아이템레벨 → 귀속 → 부위/종류 → 무기/방어도 → 스탯 → 마법부여 → 내구도 → 요구레벨 → 판매가 */
+/** 게임 툴팁 순서: 이름 → 아이템레벨 → 귀속 → 부위/종류 → 무기/방어도 → 스탯 → 마법부여 → 효과 → 설명 → 세트 → 요구레벨 (판매가·내구도는 표시 안 함) */
 function ItemBody({ item }: { item: EquipItem }) {
   const w = item.weapon;
-  const price = item.sellPrice ? copper(item.sellPrice) : null;
   return (
     <div className="text-[13.5px] leading-[1.45]">
       <div className="mb-1 flex items-start gap-2">
@@ -98,11 +97,7 @@ function ItemBody({ item }: { item: EquipItem }) {
       {item.enchants?.map((e) => (
         <div key={e} className="text-[#1eff00]">{e}</div>
       ))}
-      {(item.durabilityText || item.durability != null) && (
-        <div className="mt-1 text-tx">{item.durabilityText ?? `내구도 ${item.durability}`}</div>
-      )}
       {item.classes && <div className="text-tx">{item.classes}</div>}
-      {item.requiredLevel != null && <div className="text-tx">최소 요구 레벨 {item.requiredLevel}</div>}
       {item.bonusStats?.map((s) => (
         <div key={s} className="text-[#1eff00]">{s}</div>
       ))}
@@ -126,19 +121,8 @@ function ItemBody({ item }: { item: EquipItem }) {
           </div>
         </div>
       )}
-      {price && (
-        <div className="mt-1 flex items-center gap-1 text-tx">
-          판매 가격:
-          {price.g > 0 && <span>{price.g}<Coin c="#ffd100" /></span>}
-          {price.s > 0 && <span>{price.s}<Coin c="#c7c7cf" /></span>}
-          <span>{price.c}<Coin c="#c47a3a" /></span>
-        </div>
-      )}
+      {item.requiredLevel != null && <div className="mt-1 text-tx">최소 요구 레벨 {item.requiredLevel}</div>}
       <div className="mt-1.5 border-t border-line2 pt-1 text-[11px] text-tx3">아이템 ID {item.itemId}</div>
     </div>
   );
-}
-
-function Coin({ c }: { c: string }) {
-  return <span className="ml-0.5 inline-block h-2.5 w-2.5 rounded-full align-[-1px]" style={{ background: c }} />;
 }
