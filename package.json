@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "collect": "node --env-file-if-exists=.env.local collector/collect.mjs"
+    "collect": "node --env-file-if-exists=.env.local collector/collect.mjs",
+    "sync:static": "node worker/sync-static.mjs",
+    "deploy:worker": "node worker/sync-static.mjs && cd worker && npx wrangler deploy"
   },
   "dependencies": {
     "clsx": "^2.1.1",

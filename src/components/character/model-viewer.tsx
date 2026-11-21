@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Box, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MODEL_BASE } from "@/lib/config";
+import { MODEL_BASE, asset } from "@/lib/config";
 import { FittedRender } from "@/components/character/fitted-render";
 import { specBg, topSpec, type CharacterDetail } from "@/lib/wow";
 
@@ -46,7 +46,7 @@ function ensureViewer(): Promise<RenderFn> {
     await new Promise<void>((res, rej) => {
       const s = document.createElement("script");
       s.type = "module";
-      s.textContent = `import { renderForever } from "/lib/wow-model-viewer/forever.js"; window.renderForever = renderForever; window.dispatchEvent(new Event("forever-viewer-ready"));`;
+      s.textContent = `import { renderForever } from "${asset("/lib/wow-model-viewer/forever.js")}"; window.renderForever = renderForever; window.dispatchEvent(new Event("forever-viewer-ready"));`;
       window.addEventListener("forever-viewer-ready", () => res(), { once: true });
       s.onerror = () => rej(new Error("뷰어 모듈 로드 실패"));
       document.head.appendChild(s);

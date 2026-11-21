@@ -4,6 +4,12 @@ main = "src/index.mjs"
 compatibility_date = "2025-09-01"
 
 # 데이터 (수집기·Update 버튼이 쓰고, 사이트가 읽음)
+# 정적 파일 (아바타·이미지·배경·모델뷰어 JS) — /s/... 로 제공, Vercel CDN 요청 절감용
+# 정적 자산 요청은 Worker를 실행하지 않아 무료·무제한 (Worker 요청 한도에 안 잡힘). 파일이 없으면 아래 Worker 코드로 넘어감
+# 원본은 public/ — `npm run deploy:worker`가 worker/static/s/로 복사 후 배포
+[assets]
+directory = "./static"
+
 [[r2_buckets]]
 binding = "DATA"
 bucket_name = "wow-forever-data"

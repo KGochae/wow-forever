@@ -17,6 +17,8 @@ next-env.d.ts.timestamp
 # Worker 로컬 시크릿·캐시
 /worker/.dev.vars
 /worker/.wrangler/
+# Worker 정적 자산 복사본 (원본은 public/, npm run deploy:worker가 생성)
+/worker/static/s/
 
 /collector/node_modules/
 

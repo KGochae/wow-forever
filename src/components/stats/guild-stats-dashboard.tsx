@@ -98,7 +98,7 @@ export function GuildStatsDashboard() {
             {rankError ? (
               <div className="py-8 text-center text-fl-sm text-white/60">리더보드 데이터를 불러오지 못했습니다</div>
             ) : rank ? (
-              <StatLeaderboard members={members} stats={rank.stats} onPick={pick} />
+              <StatLeaderboard members={members} stats={rank.stats} />
             ) : (
               <div className="flex h-40 items-center justify-center"><div className="spin" /></div>
             )}

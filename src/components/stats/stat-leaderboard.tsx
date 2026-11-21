@@ -57,7 +57,7 @@ const RANK_W = "w-[3.4em] min-w-[3.4em]";
 const NAME_LEFT = "left-[3.4em]";
 const CELL = "px-[.8em] py-[.55em]";
 
-export function StatLeaderboard({ members, stats, onPick }: { members: Member[]; stats: RankStats; onPick: (m: Member) => void }) {
+export function StatLeaderboard({ members, stats }: { members: Member[]; stats: RankStats }) {
   // 등급 필터 (복수 선택 · 비어 있으면 전체) — 클래스 인원수·표 모두 이 등급 안에서 계산 · 길드장(0)은 필터 없이 항상 포함
   const [rk, setRk] = useState<Set<number>>(() => new Set());
   const rankCounts = useMemo(() => {
@@ -263,8 +263,7 @@ export function StatLeaderboard({ members, stats, onPick }: { members: Member[];
               return (
                 <tr
                   key={m.id}
-                  onClick={() => onPick(m)}
-                  className="group cursor-pointer border-b border-white/[.04] transition-colors hover:bg-white/[.05] motion-safe:animate-[stRowSlideIn_.8s_ease_both]"
+                  className="group border-b border-white/[.04] transition-colors hover:bg-white/[.05] motion-safe:animate-[stRowSlideIn_.8s_ease_both]"
                   style={{ animationDelay: `${i * 0.04}s` }}
                 >
                   <td className={cn("sticky left-0 bg-[#0f1118] text-center group-hover:bg-[#171a23]", RANK_W, CELL)}>

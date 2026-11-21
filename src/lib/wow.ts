@@ -1,5 +1,7 @@
 // WoW Forever 공통 상수 · 타입
 
+import { asset } from "./config";
+
 // 직업 고유 색상 — WEB_PROJECT js/constants.js CLASS_COLOR
 export const CLASS_INFO: Record<number, { name: string; color: string }> = {
   1: { name: "전사", color: "#c69b3a" },
@@ -208,7 +210,7 @@ const SPEC_BG: Record<number, [string, Record<string, number>]> = {
 export function specBg(classId?: number, specName?: string | null): string | null {
   const e = classId != null ? SPEC_BG[classId] : undefined;
   const id = e && specName ? e[1][specName] : undefined;
-  return e && id ? `/images/talent_bg/${e[0]}_${id}.jpg` : null;
+  return e && id ? asset(`/images/talent_bg/${e[0]}_${id}.jpg`) : null;
 }
 /** 직업의 특성 목록 (사이드바 특성 필터용) */
 export const specsOf = (classId: number) => Object.keys(SPEC_BG[classId]?.[1] ?? {});

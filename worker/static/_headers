@@ -1,0 +1,4 @@
+# Worker 정적 자산 응답 헤더 — 사이트(vercel.app)에서 모듈 import·이미지 로드
+/s/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800

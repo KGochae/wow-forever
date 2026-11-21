@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { CharacterSearch } from "@/components/common/character-search";
 import { useGuildIndex } from "@/lib/use-guild-data";
 import type { Member } from "@/lib/wow";
-import { FAN_NOTICE, RAID_ENABLED } from "@/lib/config";
+import { FAN_NOTICE, RAID_ENABLED, asset } from "@/lib/config";
 import { NoticePopup } from "@/components/landing/notice-popup";
 
 const NAV: { label: string; href?: string; disabled?: boolean }[] = [
@@ -22,7 +22,7 @@ export function Landing() {
   return (
     <div className="relative flex h-dvh items-center justify-center overflow-hidden anim-fade">
       {/* 배경: Zephra's Isle in the Clouds (2560×1440) — 밝은 이미지라 가운데 타이틀·검색만 어둡게 */}
-      <div className="absolute inset-0 bg-[url('/background/zephras.jpg')] bg-cover bg-[center_45%]" />
+      <div className="absolute inset-0 bg-cover bg-[center_45%]" style={{ backgroundImage: `url(${asset("/background/zephras.jpg")})` }} />
       <div
         className="absolute inset-0"
         style={{

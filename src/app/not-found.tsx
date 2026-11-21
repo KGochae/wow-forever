@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FAN_NOTICE } from "@/lib/config";
+import { FAN_NOTICE, asset } from "@/lib/config";
 
 export const metadata = { title: "페이지를 찾을 수 없습니다 — WOW FOREVER" };
 
@@ -7,7 +7,7 @@ export const metadata = { title: "페이지를 찾을 수 없습니다 — WOW F
 export default function NotFound() {
   return (
     <div className="relative flex h-dvh items-center justify-center overflow-hidden anim-fade">
-      <div className="absolute inset-0 bg-[url('/background/zephras.jpg')] bg-cover bg-[center_45%]" />
+      <div className="absolute inset-0 bg-cover bg-[center_45%]" style={{ backgroundImage: `url(${asset("/background/zephras.jpg")})` }} />
       <div className="absolute inset-0 bg-[rgba(5,10,20,.72)]" />
 
       <div className="anim-up relative z-[2] flex flex-col items-center gap-5 px-6 text-center [filter:drop-shadow(0_4px_28px_rgba(0,0,0,.98))]">

@@ -3,6 +3,7 @@
 import { Clock } from "lucide-react";
 import { UpdateButton } from "@/components/character/update-button";
 import { CLASS_INFO, timeAgo } from "@/lib/wow";
+import { asset } from "@/lib/config";
 
 interface Props {
   name: string;
@@ -63,7 +64,7 @@ export function CharacterHeader({ name, surname, level, classId, specName, avata
               className="flex items-center self-stretch rounded border border-transparent bg-[linear-gradient(135deg,#3b5bdb,#7048e8)] px-[9px] py-0.5 text-fl-xs font-bold tracking-[.3px] transition-[filter] hover:brightness-115"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/images/logo/SOOP_LOGO_White.svg" alt="SOOP" className="block h-[.95em] w-auto" />
+              <img src={asset("/images/logo/SOOP_LOGO_White.svg")} alt="SOOP" className="block h-[.95em] w-auto" />
             </a>
           )}
           {lastLogin && (

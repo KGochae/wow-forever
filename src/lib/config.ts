@@ -7,6 +7,13 @@ const trim = (s: string) => s.replace(/\/+$/, "");
 export const API_BASE = trim(process.env.NEXT_PUBLIC_API_BASE ?? "");
 export const DATA_BASE = trim(process.env.NEXT_PUBLIC_DATA_BASE ?? "/data");
 export const MODEL_BASE = trim(process.env.NEXT_PUBLIC_MODEL_BASE ?? "/mv");
+/** 정적 파일(아바타·이미지·배경·모델뷰어 JS) 주소 — Vercel CDN 요청을 줄이려고 운영은 Worker 정적 자산(${API_BASE}/s)에서 받음
+ *  로컬 개발은 public/ 그대로 · 원본은 public/, Worker 배포 전 `npm run deploy:worker`가 worker/static/s/로 복사 */
+export const STATIC_BASE = trim(
+  process.env.NEXT_PUBLIC_STATIC_BASE ?? (process.env.NODE_ENV === "development" || !API_BASE ? "" : `${API_BASE}/s`),
+);
+/** public/ 기준 경로("/avatars/x.webp") → 실제 주소 */
+export const asset = (path: string) => `${STATIC_BASE}${path}`;
 
 /** 운영 사이트 주소 (공유 미리보기 절대경로용) */
 export const SITE_URL = "https://wafo-haja.vercel.app";
